@@ -668,3 +668,57 @@ document.addEventListener('click', e => {
 
 // Initialer Validierungs-Render
 validateS1();
+
+document.getElementById('btn-pdf-download').addEventListener('click', () => {
+  // Ein temporäres Element erstellen, um das PDF sauber zu layouten
+  const element = document.createElement('div');
+  element.style.padding = '30px';
+  element.style.fontFamily = 'Lato, sans-serif';
+  element.style.color = '#1a2e1a';
+
+  // Wunderschönen Header für das PDF generieren
+  element.innerHTML = `
+    <div style="border-bottom: 2px solid #2f7044; padding-bottom: 15px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center;">
+      <span style="font-size: 20px; font-weight: bold; color: #313231;">Deutsches Ehrenamt</span>
+      <span style="font-size: 12px; color: #5a6a5a; text-align: right;">Unverbindliche Übersicht<br>Datum: ${fmt(new Date())}</span>
+    </div>
+    <h1 style="font-family: Vollkorn, serif; font-size: 26px; color: #2f7044; margin-bottom: 10px;">Ihre Schutzbrief-Konfiguration</h1>
+    <p style="font-size: 14px; color: #5a6a5a; margin-bottom: 30px;">Nachfolgend finden Sie die Zusammenfassung Ihrer Eingaben und Berechnungen.</p>
+    
+    <div style="margin-bottom: 20px;">
+      <h2 style="font-size: 16px; color: #2f7044; margin-bottom: 10px; border-bottom: 1px solid #e0e6e0; padding-bottom: 5px;">1. Organisation & Paket</h2>
+      ${document.getElementById('ov-organisation').innerHTML}
+    </div>
+
+    <div style="margin-bottom: 20px; page-break-inside: avoid;">
+      <h2 style="font-size: 16px; color: #2f7044; margin-bottom: 10px; border-bottom: 1px solid #e0e6e0; padding-bottom: 5px;">2. Enthaltene Leistungen</h2>
+      ${document.getElementById('ov-paket').innerHTML}
+    </div>
+
+    <div style="margin-bottom: 20px; page-break-inside: avoid;">
+      <h2 style="font-size: 16px; color: #2f7044; margin-bottom: 10px; border-bottom: 1px solid #e0e6e0; padding-bottom: 5px;">3. Startzeitpunkte</h2>
+      ${document.getElementById('ov-startzeit').innerHTML}
+    </div>
+
+    <div style="margin-top: 30px; background: #f5f7f5; padding: 20px; border-radius: 8px; page-break-inside: avoid;">
+      <h2 style="font-size: 16px; color: #2f7044; margin-bottom: 15px;">4. Kostenberechnung</h2>
+      ${document.getElementById('ov-kosten').innerHTML}
+    </div>
+    
+    <p style="font-size: 11px; color: #8a9a8a; margin-top: 4px; line-height: 1.4;">
+      Hinweis: Diese Übersicht ist unverbindlich und dient zur Dokumentation Ihrer Online-Berechnung.
+    </p>
+  `;
+
+  // Optionen für den PDF-Export festlegen
+  const opt = {
+    margin:       15,
+    filename:     'Vereins-Schutzbrief_Konfiguration.pdf',
+    image:        { type: 'jpeg', quality: 0.98 },
+    html2canvas:  { scale: 2, useCORS: true },
+    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
+
+  // PDF generieren und herunterladen
+  html2pdf().set(opt).from(element).save();
+});
