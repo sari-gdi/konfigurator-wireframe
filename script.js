@@ -597,7 +597,6 @@ document.getElementById('help-modal').addEventListener('click', e => {
   if (e.target.id === 'help-modal') closeHelpModal();
 });
 
-// BUGFIX: Klick-Delegation über .closest() fängt Klicks auf Icons jetzt auf jedem Endgerät ab
 document.addEventListener('click', e => {
   const helpBtn = e.target.closest('.help-icon');
   if (helpBtn) {
