@@ -1,3387 +1,447 @@
 <!DOCTYPE html>
-
 <html lang="de">
-
 <head>
-
-<meta charset="UTF-8">
-
-<title>Vereins-Schutzbrief Konfigurator</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Vollkorn:wght@600;700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
-
-<style>
-
-* { box-sizing: border-box; margin: 0; padding: 0; }
-
-html { scroll-behavior: smooth; }
-
-
-
-:root {
-
-  --bg-page: #eaf3ea;
-
-  --bg-card: #ffffff;
-
-  --bg-muted: #f5f7f5;
-
-  --border-soft: #e0e6e0;
-
-  --text-primary: #1a2e1a;
-
-  --text-secondary: #5a6a5a;
-
-  --text-muted: #8a9a8a;
-
-  --brand-green: #2f7044;
-
-  --brand-green-dark: #2F7044;
-
-  --brand-green-light: #2a7a4a;
-
-  --accent-orange: #d49100;
-
-  --accent-orange-bg: #fff8e6;
-
-  --warn-orange: #b85c00;
-
-  --info-blue: #4a73a8;
-
-  --info-blue-bg: #eef3fa;
-
-  --radius-card: 16px;
-
-  --radius-button: 8px;
-
-  --shadow-card: 0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.04);
-
-  --font-serif: "Vollkorn", Georgia, serif;
-
-  --font-sans: "Lato", -apple-system, BlinkMacSystemFont, sans-serif;
-
-
-
-  /* ==========================================================================
-
-     DESIGN SYSTEM: FLUID & PROPORTIONAL TYPOGRAPHY (Base: 16px)
-
-     ========================================================================== */
-
-  /* Fluid Headings: Skalierung punktgenau zwischen 360px und 720px Viewport */
-
-  --font-size-hero: clamp(2.25rem, 1.5rem + 3.33vw, 3rem);         /* 36px -> 48px */
-
-  --font-size-h1-intro: clamp(1.625rem, 1rem + 2.78vw, 2.25rem);   /* 26px -> 36px */
-
-  --font-size-h1-step: clamp(1.5rem, 1.125rem + 1.67vw, 1.875rem); /* 24px -> 30px */
-
-  
-
-  /* Proportionale UI-Größen */
-
-  --font-size-lg: 1.125rem;   /* 18px - Sektionen & Card-Headlines im Overview */
-
-  --font-size-md: 1.0625rem;  /* 17px - Optionale Preise */
-
-  --font-size-body: 1rem;     /* 16px - Standard Fließtext, Inputs, Buttons */
-
-  --font-size-sm: 0.875rem;   /* 14px - Beschreibungen, Element-Labels, Stepper-Text */
-
-  --font-size-xs: 0.8125rem;  /* 13px - Hinweise, Zusatzinfos, Nummern-Badges */
-
-  --font-size-xxs: 0.75rem;   /* 12px - Kleine Status-Tags, Empfehlungs-Badges */
-
-}
-
-
-
-/* Global Utility */
-
-.hidden { display: none !important; }
-
-
-
-body {
-
-  font-family: var(--font-sans);
-
-  background: var(--bg-page);
-
-  color: var(--text-primary);
-
-  line-height: 1.5;
-
-  font-size: var(--font-size-body);
-
-}
-
-
-
-/* Header */
-
-.header {
-
-  background: #fff;
-
-  padding: 16px 32px;
-
-  display: grid;
-
-  grid-template-columns: 1fr auto 1fr;
-
-  align-items: center;
-
-  gap: 16px;
-
-  box-shadow: 0 1px 0 var(--border-soft);
-
-  position: sticky;
-
-  top: 0;
-
-  z-index: 100;
-
-}
-
-.logo { display: flex; align-items: center; gap: 8px; }
-
-.logo svg { height: 24px; width: auto; }
-
-.logo-accent { display: inline-block; width: 14px; height: 14px; background: #DA1217; }
-
-.main-stepper { display: flex; gap: 24px; align-items: center; justify-self: center; }
-
-.main-step { display: flex; align-items: center; gap: 8px; font-size: var(--font-size-xs); color: var(--text-muted); }
-
-.main-step-num { width: 24px; height: 24px; border-radius: 50%; background: #e0e6e0; color: var(--text-muted); display: flex; align-items: center; justify-content: center; font-size: var(--font-size-xs); font-weight: 600; flex-shrink: 0; }
-
-.main-step.active .main-step-num { background: var(--brand-green); color: #fff; }
-
-.main-step.active { color: var(--text-primary); font-weight: 600; }
-
-.btn-contact { background: var(--brand-green); color: #fff; padding: 10px 20px; border-radius: 6px; font-size: var(--font-size-xs); font-weight: 600; border: none; cursor: pointer; font-family: inherit; justify-self: end; white-space: nowrap; }
-
-
-
-/* Page wrapper */
-
-.wrap { max-width: 720px; margin: 0 auto; padding: 32px 16px 80px; }
-
-.page-intro { text-align: center; margin-bottom: 32px; }
-
-.page-intro h1 { font-family: var(--font-serif); font-size: var(--font-size-h1-intro); margin-bottom: 8px; color: var(--text-primary); }
-
-.page-intro p { color: var(--text-secondary); font-size: var(--font-size-body); }
-
-
-
-/* Step Card */
-
-.step {
-
-  background: var(--bg-card);
-
-  border-radius: var(--radius-card);
-
-  padding: 40px 48px;
-
-  margin-bottom: 24px;
-
-  scroll-margin-top: 100px;
-
-  box-shadow: var(--shadow-card);
-
-  opacity: 0;
-
-  transform: translateY(20px);
-
-  transition: opacity 400ms cubic-bezier(0.4, 0, 0.2, 1), transform 400ms cubic-bezier(0.4, 0, 0.2, 1);
-
-}
-
-.step.visible { opacity: 1; transform: translateY(0); }
-
-.step.hidden-step { display: none; }
-
-
-
-/* Stepper Pillen */
-
-.stepper { display: flex; gap: 6px; margin-bottom: 16px; justify-content: center; }
-
-.step-pill { width: 10px; height: 10px; border-radius: 999px; background: #c5d6c5; transition: all 0.3s ease; }
-
-.step-pill.done { background: var(--brand-green); }
-
-.step-pill.current { background: var(--brand-green); width: 32px; }
-
-
-
-/* Headlines */
-
-h1.step-title { font-family: var(--font-serif); font-size: var(--font-size-h1-step); font-weight: 700; text-align: center; color: var(--text-primary); margin-bottom: 8px; }
-
-.step-subtitle { font-size: var(--font-size-body); color: var(--text-secondary); margin-bottom: 28px; text-align: center; max-width: 480px; margin-left: auto; margin-right: auto; }
-
-
-
-/* Form */
-
-.field { margin-bottom: 20px; }
-
-label.q { display: flex; align-items: center; justify-content: space-between; font-weight: 600; margin-bottom: 8px; font-size: var(--font-size-body); gap: 8px; }
-
-.q-label { display: flex; align-items: center; gap: 6px; }
-
-.required { color: var(--text-muted); flex-shrink: 0; }
-
-select, input[type="date"] {
-
-  border: 1px solid var(--border-soft);
-
-  padding: 12px 14px;
-
-  font-size: var(--font-size-body);
-
-  font-family: inherit;
-
-  width: 100%;
-
-  background: var(--bg-card);
-
-  border-radius: 8px;
-
-  color: var(--text-primary);
-
-  cursor: pointer;
-
-}
-
-
-
-select {
-
-  appearance: none;
-
-  -webkit-appearance: none;
-
-  -moz-appearance: none;
-
-  padding-right: 40px;
-
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'><path d='M2 4l4 4 4-4' stroke='%2358595B' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/></svg>");
-
-  background-repeat: no-repeat;
-
-  background-position: right 14px center;
-
-}
-
-
-
-select:focus, input[type="date"]:focus {
-
-  outline: none;
-
-  border-color: var(--brand-green);
-
-}
-
-
-
-/* Radio Buttons */
-
-.radio-group { display: flex; flex-direction: column; gap: 0; }
-
-.radio-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; cursor: pointer; }
-
-.radio-row input[type="radio"] { width: 18px; height: 18px; accent-color: var(--brand-green); cursor: pointer; flex-shrink: 0; }
-
-.radio-row.disabled { opacity: 0.5; pointer-events: none; }
-
-.radio-row .default-tag { background: #e8ece8; color: var(--text-secondary); font-size: var(--font-size-xxs); font-weight: 600; padding: 2px 8px; border-radius: 4px; text-transform: uppercase; margin-left: 6px; letter-spacing: 0.5px; }
-
-
-
-/* Indent Datepicker */
-
-.indent { margin-left: 28px; margin-top: 4px; }
-
-.indent.hidden { display: none; }
-
-.hint { font-size: var(--font-size-xs); color: var(--text-muted); margin-top: 4px; display: flex; align-items: center; gap: 4px; }
-
-
-
-/* Buttons */
-
-button.primary {
-
-  background: var(--brand-green); color: #fff; border: none;
-
-  padding: 14px 28px; font-size: var(--font-size-body); font-weight: 600;
-
-  cursor: pointer; font-family: inherit;
-
-  border-radius: 8px;
-
-  transition: background 0.2s;
-
-}
-
-button.primary:hover:not(:disabled) { background: var(--brand-green-dark); }
-
-button.primary:disabled { background: #b5c5b5; cursor: not-allowed; }
-
-button.secondary {
-
-  background: var(--bg-card); color: var(--text-primary);
-
-  border: 1px solid var(--border-soft);
-
-  padding: 14px 28px; font-size: var(--font-size-body); font-weight: 600;
-
-  cursor: pointer; font-family: inherit;
-
-  border-radius: 8px;
-
-}
-
-button.secondary:hover { background: var(--bg-muted); border-color: var(--brand-green); }
-
-.btn-row { display: flex; justify-content: space-between; align-items: center; margin-top: 24px; gap: 12px; flex-wrap: wrap; }
-
-.btn-row-right { display: flex; gap: 12px; margin-left: auto; }
-
-
-
-.help-icon {
-
-  display: inline-flex;
-
-  width: 16px;
-
-  height: 16px;
-
-  background-image: url("data:image/svg+xml;utf8,<svg width='16' height='16' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'><path d='M8 7.333a.667.667 0 0 1 .667.667v2.667a.667.667 0 1 1-1.334 0V8A.667.667 0 0 1 8 7.333zM8.007 4.667a.667.667 0 1 1 0 1.333H8a.667.667 0 1 1 0-1.333h.007zM8 .667A7.333 7.333 0 1 1 8 15.333 7.333 7.333 0 0 1 8 .667zm0 1.333a6 6 0 1 0 0 12 6 6 0 0 0 0-12z' fill='%2358595B'/></svg>");
-
-  background-repeat: no-repeat;
-
-  background-size: 16px 16px;
-
-  cursor: pointer;
-
-  user-select: none;
-
-  vertical-align: middle;
-
-  border: none;
-
-  background-color: transparent;
-
-  padding: 0;
-
-  font-size: 0;
-
-  color: transparent;
-
-}
-
-.help-icon:hover { opacity: 0.7; }
-
-
-
-/* Help Modal */
-
-.help-modal-content { max-width: 560px; }
-
-.help-modal-content .modal-icon-badge { width: 40px; height: 40px; background: var(--bg-page); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; font-style: italic; font-family: Georgia, serif; color: var(--brand-green); font-size: 18px; border: 1px solid var(--border-soft); }
-
-
-
-/* FIX: Hilfe-Modal Überschrift auf fett, serifenlos (Body) und exakt 18px umgestellt */
-
-.help-modal-content h2 { 
-
-  font-family: var(--font-sans); 
-
-  font-size: 18px; 
-
-  font-weight: 700; 
-
-  margin-bottom: 12px; 
-
-  color: var(--text-primary); 
-
-}
-
-
-
-.help-modal-content p { font-size: var(--font-size-body); line-height: 1.6; color: var(--text-secondary); margin-bottom: 16px; }
-
-.help-modal-content h3 { font-size: var(--font-size-body); font-weight: 700; color: var(--text-primary); margin: 16px 0 8px; }
-
-.help-modal-content ul { margin: 0 0 16px 20px; }
-
-.help-modal-content li { font-size: var(--font-size-body); line-height: 1.7; color: var(--text-secondary); }
-
-.modal-close { position: absolute; top: 16px; right: 16px; width: 32px; height: 32px; border: none; background: transparent; cursor: pointer; font-size: 22px; color: var(--text-muted); display: flex; align-items: center; justify-content: center; border-radius: 50%; }
-
-.modal-close:hover { background: var(--bg-muted); color: var(--text-primary); }
-
-
-
-/* HERO BANNER Step 2 */
-
-.hero-banner {
-
-  background: var(--brand-green);
-
-  color: #fff;
-
-  border-radius: 12px;
-
-  padding: 28px;
-
-  margin-bottom: 24px;
-
-  display: flex;
-
-  align-items: center;
-
-  gap: 32px;
-
-  flex-wrap: wrap;
-
-}
-
-.hero-price-block { flex: 0 0 auto; text-align: center; }
-
-.hero-price { font-family: var(--font-serif); font-size: var(--font-size-hero); font-weight: 700; line-height: 1; margin-bottom: 4px; }
-
-.hero-price-label { font-size: var(--font-size-xxs); opacity: 0.85; text-transform: uppercase; letter-spacing: 1px; }
-
-.hero-pills { flex: 1; display: flex; flex-direction: column; gap: 8px; min-width: 240px; }
-
-.hero-pill { background: rgba(255,255,255,0.12); padding: 8px 14px; border-radius: 99px; font-size: var(--font-size-sm); display: flex; align-items: center; gap: 8px; }
-
-.hero-pill::before { content: '✓'; font-size: 11px; }
-
-
-
-/* Recap Tags (Step 2 + 3) */
-
-.recap-card {
-
-  background: var(--bg-card);
-
-  border: 1px solid var(--border-soft);
-
-  border-radius: 12px;
-
-  padding: 20px;
-
-  margin-bottom: 20px;
-
-  display: flex;
-
-  flex-direction: column;
-
-  gap: 12px;
-
-}
-
-.recap-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-
-.recap-title { font-size: var(--font-size-sm); font-weight: 700; color: var(--text-primary); }
-
-.edit-link { background: none; border: none; color: var(--brand-green); font-weight: 600; font-size: var(--font-size-sm); cursor: pointer; padding: 0; display: flex; align-items: center; gap: 4px; font-family: inherit; }
-
-.edit-link:hover { text-decoration: underline; }
-
-.recap-tags { display: flex; flex-wrap: wrap; gap: 8px; }
-
-.recap-tag { background: var(--bg-muted); padding: 4px 10px; border-radius: 4px; font-size: var(--font-size-xs); color: var(--text-primary); border: 1px solid var(--border-soft); }
-
-
-
-/* Inklusiv Cards Grid */
-
-.section-head { font-size: var(--font-size-lg); font-weight: 700; margin: 24px 0 12px; color: var(--text-primary); }
-
-.inclusive-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-
-.inclusive-card {
-
-  background: var(--bg-card);
-
-  border: 1px solid var(--border-soft);
-
-  border-radius: 12px;
-
-  padding: 20px;
-
-  position: relative;
-
-  min-height: 100px;
-
-}
-
-.inclusive-card .card-icon { display: none; }
-
-.inclusive-card .card-help { position: absolute; top: 20px; right: 20px; }
-
-.inclusive-card .card-title { font-weight: 700; font-size: var(--font-size-body); margin-bottom: 6px; color: var(--text-primary); padding-right: 24px; }
-
-.inclusive-card .card-desc { font-size: var(--font-size-sm); color: var(--text-secondary); line-height: 1.5; }
-
-.inclusive-card.hidden { display: none; }
-
-
-
-/* Optional Cards 2-spaltig */
-
-.optional-grid {
-
-  display: grid;
-
-  grid-template-columns: 1fr 1fr;
-
-  gap: 12px;
-
-  margin-top: 12px;
-
-}
-
-.optional-card {
-
-  background: var(--bg-card);
-
-  border: 1px solid var(--border-soft);
-
-  border-radius: 12px;
-
-  padding: 20px;
-
-  position: relative;
-
-  display: flex;
-
-  flex-direction: column;
-
-}
-
-.optional-card.active { border-color: var(--brand-green); border-width: 2px; padding: 19px; }
-
-
-
-.recommendation-badge {
-
-  display: inline-flex;
-
-  align-items: center;
-
-  gap: 4px;
-
-  background: var(--brand-green);
-
-  color: #fff;
-
-  font-size: var(--font-size-xxs);
-
-  font-weight: 600;
-
-  padding: 4px 10px;
-
-  border-radius: 99px;
-
-  margin-bottom: 10px;
-
-  align-self: flex-start;
-
-}
-
-.recommendation-badge::before { content: '✓'; font-size: 10px; }
-
-.optional-card.disabled { opacity: 0.55; pointer-events: none; }
-
-.opt-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 8px; }
-
-.opt-title { font-weight: 700; font-size: var(--font-size-body); color: var(--text-primary); display: flex; align-items: center; gap: 8px; padding-right: 24px; }
-
-
-
-.opt-price { 
-
-  font-size: var(--font-size-md); 
-
-  font-weight: 700; 
-
-  color: var(--text-primary); 
-
-  margin-bottom: 8px; 
-
-}
-
-.opt-price .price-interval {
-
-  font-weight: 400;
-
-  color: var(--text-secondary);
-
-  font-size: var(--font-size-sm);
-
-}
-
-
-
-.opt-desc { font-size: var(--font-size-sm); color: var(--text-secondary); line-height: 1.5; margin-bottom: 12px; }
-
-.opt-spacer { flex: 1; }
-
-.opt-action { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-soft); }
-
-.opt-action-label { font-size: var(--font-size-body); font-weight: 600; color: var(--text-primary); }
-
-.opt-card-help { position: absolute; top: 20px; right: 20px; }
-
-
-
-/* Checkbox (shadcn-style) */
-
-.checkbox {
-
-  width: 20px;
-
-  height: 20px;
-
-  border: 1.5px solid #c5cdc5;
-
-  border-radius: 4px;
-
-  background: #fff;
-
-  cursor: pointer;
-
-  position: relative;
-
-  flex-shrink: 0;
-
-  transition: all 0.15s;
-
-}
-
-.checkbox:hover { border-color: var(--brand-green); }
-
-.checkbox.checked {
-
-  background: var(--brand-green);
-
-  border-color: var(--brand-green);
-
-}
-
-.checkbox.checked::after {
-
-  content: '';
-
-  position: absolute;
-
-  left: 5px;
-
-  top: 1px;
-
-  width: 6px;
-
-  height: 11px;
-
-  border: solid white;
-
-  border-width: 0 2px 2px 0;
-
-  transform: rotate(45deg);
-
-}
-
-
-
-/* Beitrag-Vorschau (Step 2) */
-
-.beitrag-block {
-
-  background: var(--bg-card);
-
-  border: 1px solid var(--border-soft);
-
-  border-radius: 12px;
-
-  padding: 20px;
-
-  margin-top: 24px;
-
-}
-
-.beitrag-title { font-size: var(--font-size-body); font-weight: 700; margin-bottom: 12px; }
-
-.beitrag-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; font-size: var(--font-size-sm); color: var(--text-secondary); gap: 12px; }
-
-.beitrag-row.summary { font-weight: 700; color: var(--text-primary); border-top: 1px solid var(--border-soft); margin-top: 8px; padding-top: 12px; }
-
-.info-box {
-
-  background: var(--info-blue-bg);
-
-  border: 1px solid var(--info-blue);
-
-  padding: 12px 14px;
-
-  margin-top: 12px;
-
-  font-size: var(--font-size-sm);
-
-  color: #2a4d7a;
-
-  line-height: 1.5;
-
-  border-radius: 4px;
-
-}
-
-
-
-/* Module (Step 3) */
-
-.module {
-
-  background: var(--bg-card);
-
-  border: 1px solid var(--border-soft);
-
-  border-radius: 12px;
-
-  padding: 20px;
-
-  margin-top: 12px;
-
-  position: relative;
-
-}
-
-.module-tag {
-
-  display: inline-block;
-
-  background: var(--bg-muted);
-
-  border: 1px solid var(--border-soft);
-
-  color: var(--text-secondary);
-
-  font-size: var(--font-size-xxs);
-
-  font-weight: 600;
-
-  padding: 3px 10px;
-
-  border-radius: 99px;
-
-  margin-bottom: 8px;
-
-}
-
-.module h3 { font-size: var(--font-size-body); font-weight: 700; margin-bottom: 12px; color: var(--text-primary); display: flex; align-items: center; gap: 8px; }
-
-
-
-/* Hinweis-Boxen */
-
-.rule-hint {
-
-  background: var(--info-blue-bg);
-
-  border: 1px solid var(--info-blue);
-
-  padding: 12px 16px;
-
-  margin: 16px 0;
-
-  font-size: var(--font-size-sm);
-
-  line-height: 1.5;
-
-  color: #2a4d7a;
-
-  border-radius: 4px;
-
-}
-
-.warn-hint {
-
-  background: var(--accent-orange-bg);
-
-  border: 1px solid var(--accent-orange);
-
-  padding: 12px 16px;
-
-  margin-top: 12px;
-
-  font-size: var(--font-size-sm);
-
-  line-height: 1.5;
-
-  color: var(--warn-orange);
-
-  border-radius: 6px;
-
-}
-
-.warn-hint strong { color: var(--warn-orange); }
-
-
-
-/* Zusammenfassung Block */
-
-.zusammenfassung {
-
-  background: var(--bg-card);
-
-  border: 1px solid var(--border-soft);
-
-  border-radius: 12px;
-
-  padding: 20px;
-
-  margin-top: 24px;
-
-}
-
-.zusammenfassung-title { font-size: var(--font-size-body); font-weight: 700; margin-bottom: 12px; }
-
-.zus-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; font-size: var(--font-size-sm); gap: 12px; }
-
-.zus-row .lbl { color: var(--text-primary); }
-
-.zus-row .val { color: var(--text-primary); font-weight: 500; text-align: right; }
-
-.zus-row .val.muted { color: var(--text-muted); font-style: italic; font-weight: 400; }
-
-.zus-row .val.warn { color: var(--warn-orange); }
-
-
-
-/* Step 4 — separate Cards */
-
-.overview-card {
-
-  background: var(--bg-card);
-
-  border: 1px solid var(--border-soft);
-
-  border-radius: 12px;
-
-  padding: 24px;
-
-  margin-bottom: 16px;
-
-}
-
-.ov-card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; gap: 12px; }
-
-.ov-card-title { font-size: var(--font-size-lg); font-weight: 700; }
-
-.ov-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; font-size: var(--font-size-sm); gap: 12px; }
-
-.ov-row .lbl { color: var(--text-secondary); }
-
-.ov-row .val { color: var(--text-primary); font-weight: 500; text-align: right; }
-
-
-
-.tag-not-included,
-
-.tag-suspended,
-
-.zus-row .val.muted,
-
-.zus-row .val.warn,
-
-.ov-row .val.muted,
-
-.ov-row .val.warn {
-
-  display: inline-flex;
-
-  align-items: center;
-
-  padding: 2px 8px;
-
-  background: #FFFFFF;
-
-  border: 1px solid #DEEEDE;
-
-  border-radius: 4px;
-
-  font-size: var(--font-size-xxs);
-
-  font-weight: 500;
-
-  font-style: normal;
-
-  text-transform: none;
-
-  letter-spacing: 0;
-
-  white-space: nowrap;
-
-}
-
-
-
-.tag-not-included,
-
-.zus-row .val.muted,
-
-.ov-row .val.muted {
-
-  color: var(--text-secondary);
-
-}
-
-
-
-.tag-suspended,
-
-.zus-row .val.warn,
-
-.ov-row .val.warn {
-
-  color: var(--warn-orange);
-
-}
-
-.paket-group-label { font-size: var(--font-size-xxs); text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); font-weight: 700; margin: 16px 0 6px; padding-bottom: 4px; border-bottom: 1px solid var(--border-soft); }
-
-.paket-group-label:first-of-type { margin-top: 0; }
-
-
-
-/* Kosten dreigeteilt */
-
-.cost-section { margin-bottom: 20px; }
-
-.cost-section:last-child { margin-bottom: 0; }
-
-.cost-section-title { font-size: var(--font-size-xs); font-weight: 700; color: var(--brand-green); margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid #c0d8c0; }
-
-.ov-cost-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; font-size: var(--font-size-sm); gap: 12px; }
-
-.ov-cost-row.subtotal { font-weight: 700; color: var(--text-primary); padding-top: 8px; margin-top: 4px; border-top: 1px solid var(--border-soft); }
-
-
-
-/* Modal */
-
-.modal-backdrop {
-
-  position: fixed; inset: 0;
-
-  background: rgba(0,0,0,0.4);
-
-  display: flex; align-items: center; justify-content: center;
-
-  z-index: 2000;
-
-  padding: 16px;
-
-}
-
-.modal-backdrop.hidden { display: none; }
-
-.modal {
-
-  background: #fff;
-
-  border-radius: 16px;
-
-  padding: 32px;
-
-  max-width: 480px;
-
-  width: 100%;
-
-  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-
-  position: relative;
-
-}
-
-.modal-title { font-size: 18px; font-weight: 700; margin-bottom: 12px; color: var(--text-primary); }
-
-.modal-body { font-size: var(--font-size-body); color: var(--text-secondary); line-height: 1.6; margin-bottom: 24px; }
-
-.modal-actions { display: flex; flex-direction: column; gap: 8px; }
-
-.modal-actions button { width: 100%; }
-
-
-
-
-
-/* ==========================================================================
-
-   NEUE MOBILE OPTIMIERUNGEN & RESPONSIVE BREAKPOINTS
-
-   ========================================================================== */
-
-
-
-@media (max-width: 768px) {
-
-  .header { 
-
-    grid-template-columns: 1fr auto; 
-
-    grid-template-rows: auto;
-
-    padding: 14px 24px;
-
-    gap: 16px;
-
-  }
-
-  .logo {
-
-    grid-column: 1;
-
-    justify-self: start;
-
-  }
-
-  .btn-contact { 
-
-    grid-column: 2;
-
-    justify-self: end;
-
-    padding: 10px 16px;
-
-    font-size: var(--font-size-xs);
-
-  }
-
-  .main-stepper {
-
-    position: fixed;
-
-    bottom: 0;
-
-    left: 0;
-
-    right: 0;
-
-    background: #ffffff;
-
-    box-shadow: 0 -2px 10px rgba(0,0,0,0.06);
-
-    padding: 14px 24px;
-
-    z-index: 150;
-
-    width: 100%;
-
-    max-width: 100%;
-
-    justify-content: space-around;
-
-    gap: 8px;
-
-    border-top: 1px solid var(--border-soft);
-
-  }
-
-}
-
-
-
-@media (max-width: 600px) {
-
-  .header {
-
-    padding: 12px 16px;
-
-  }
-
-  .btn-contact {
-
-    padding: 10px 14px;
-
-    font-size: var(--font-size-xs);
-
-  }
-
-  
-
-  .main-step span:not(.main-step-num) {
-
-    display: none;
-
-  }
-
-  .main-stepper {
-
-    justify-content: center;
-
-    gap: 20px;
-
-    padding: 12px 16px;
-
-  }
-
-
-
-  .wrap {
-
-    padding-bottom: 140px !important;
-
-  }
-
-
-
-  .step {
-
-    padding: 24px 16px;
-
-    border-radius: 12px;
-
-    margin-bottom: 16px;
-
-  }
-
-
-
-  .beitrag-row, .zus-row, .ov-row, .ov-cost-row {
-
-    align-items: flex-start;
-
-  }
-
-  
-
-  .beitrag-row style, 
-
-  .beitrag-row [style*="display:flex"] {
-
-    flex-wrap: wrap;
-
-    justify-content: flex-end;
-
-    gap: 8px !important;
-
-  }
-
-
-
-  .hero-banner {
-
-    padding: 16px;
-
-    gap: 16px;
-
-    flex-direction: column;
-
-    text-align: center;
-
-  }
-
-  .hero-price-block { width: 100%; }
-
-  .hero-pills { width: 100%; min-width: unset; }
-
-  .hero-pill { justify-content: center; }
-
-
-
-  .inclusive-grid, .optional-grid {
-
-    grid-template-columns: 1fr !important;
-
-    gap: 10px;
-
-  }
-
-  .inclusive-card, .optional-card { padding: 16px; }
-
-  .optional-card.active { padding: 15px; }
-
-
-
-  .btn-row {
-
-    flex-direction: column-reverse;
-
-    gap: 10px;
-
-    width: 100%;
-
-  }
-
-  .btn-row-right {
-
-    flex-direction: column;
-
-    width: 100%;
-
-    margin-left: 0;
-
-    gap: 10px;
-
-  }
-
-  button.primary, button.secondary {
-
-    width: 100%;
-
-    text-align: center;
-
-    padding: 12px 16px;
-
-  }
-
-
-
-  .modal { padding: 20px; }
-
-}</style>
-
+  <meta charset="UTF-8">
+  <title>Vereins-Schutzbrief Konfigurator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Vollkorn:wght@600;700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
-
-
-<!-- HEADER mit Stepper -->
-
-<header class="header">
-
-  <div class="logo">
-
-    <svg viewBox="0 0 3121 422" xmlns="http://www.w3.org/2000/svg" aria-label="Deutsches Ehrenamt"><g><path d="M2834.47 294.827H2961.85V422H2834.48L2834.47 294.827Z" fill="#DA1217"/><path d="M2992.15 294.827H3119.53L3119.52 422H2992.15V294.827Z" fill="#DA1217"/><path d="M2676.83 294.827H2804V422H2676.83V294.827Z" fill="#DA1217"/><path d="M997.252 0H1025.75C1041.18 3.76552 1043.36 1.82576 1061.71 9.13323L1056.6 22.6071C1029.62 10.9071 998.924 9.77821 971.427 20.1073C927.695 37.0338 913.359 81.8089 916.358 125.066C921.731 202.548 990.899 228.511 1057.92 201.762L1062.46 214.362C1029.66 231.291 972.959 229.081 942.441 207.731C892.27 172.633 886.902 92.3633 919.731 44.0193C939.474 14.9456 964.628 5.93702 997.252 0Z" fill="#313231"/><path d="M809.52 0H832.507C846.312 2.96876 851.376 3.32434 864.041 9.83314L857.931 23.41C823.27 4.35539 765.358 9.70876 772.65 63.3043C776.376 90.6969 821.94 100.827 842.937 114.186C868.651 130.546 878.803 154.598 869.36 184.734C854.052 232.827 786.399 234.012 750.165 210.731L756.366 197.742C796.221 222.615 865.597 218.122 855.587 154.516C850.928 124.916 808.368 116.977 785.689 103.407C756.985 86.232 747.693 56.962 764.207 26.8752C773.337 10.6592 791.881 4.06557 809.52 0Z" fill="#313231"/><path d="M1501.28 0H1523.74C1537.06 2.55189 1543.05 3.7092 1555.5 9.65532L1549.17 23.5217C1548.73 23.2311 1548.28 22.9488 1547.83 22.6749C1527.75 10.4229 1481.73 7.31014 1469.14 32.331C1444.65 81.0212 1496.84 95.5375 1529.92 111.532C1543.21 118.607 1559.43 133.176 1562.29 148.741C1576.18 224.489 1494.33 241.611 1441.63 211.017L1447.74 197.801C1487.92 222.358 1555.91 218.555 1547.36 154.946C1543.4 125.54 1498.45 116.457 1476.25 102.898C1448.46 85.9223 1438.79 55.1493 1456.19 26.3098C1466.15 9.9171 1483.06 4.01852 1501.28 0Z" fill="#313231"/><path d="M2962.34 2.99713L3121 3.00002V16.218H3049.9V222.218H3033.78V16.218H2962.34V2.99713Z" fill="#313231"/><path d="M0 4.46892L13.0009 4.46246L13.0015 221.177L0 221.173V4.46892Z" fill="#DA1217"/><path d="M97.5889 1.48633C193.385 -4.13098 240.822 61.9472 213.815 154.012C206.046 180.497 186.608 199.817 162.078 211.767C133.275 225.283 80.5863 226.342 49 222.03V6.44727C65.5304 3.17072 80.8195 2.26328 97.5889 1.48633ZM122.081 15.627C112.507 14.8667 97.2617 13.8217 87.583 15.4063C79.2177 16.1666 73.2293 16.7662 64.9014 18.3975L64.9004 208.774C99.271 213.425 138.295 211.402 168.045 192.136C191.936 172.868 200.171 154.223 204.016 124.105C211.421 66.087 182.637 20.4902 122.081 15.627Z" fill="#313231"/><path d="M2073.54 1.48117C2089.33 0.408739 2106.06 2.34605 2120.8 8.02999C2157.46 22.1624 2165.15 71.8985 2138.65 99.1579C2130.29 107.757 2122.39 111.638 2111.43 116.091L2111.97 116.317C2139.17 127.827 2142.99 153.281 2148.8 179.193C2152.32 194.908 2155.12 207.284 2161.16 222.217H2144.84C2137.07 202.815 2134.06 179.32 2128.4 158.757C2115.95 116.514 2083.98 121.663 2048 121.9V222.217H2032V5.71359C2046.86 3.26603 2058.6 2.21482 2073.54 1.48117ZM2096.91 15.7976C2088.37 14.6692 2069.96 13.4885 2061.4 15.3591C2057.18 15.9176 2052.07 16.4494 2048 17.4265V109C2069.13 109.126 2099.4 111.651 2117.19 100.047C2154.12 74.3192 2141.18 21.643 2096.91 15.7976Z" fill="#313231"/><path d="M2752.15 2.99844L2770.42 2.99998C2779.17 23.3058 2788.39 51.5436 2796.54 72.7071C2812.79 114.875 2828.44 157.537 2841.98 200.649C2851.86 167.034 2864.67 134.28 2877.35 101.64L2915.72 2.99792L2934.64 2.99998C2935.6 27.2787 2937.9 53.7568 2939.53 78.1314L2949.14 222.222L2933.32 222.218C2931.43 160.269 2924.59 95.8996 2922.61 32.7558C2922.48 29.6979 2922.22 27.3381 2921.83 24.3023L2920.65 24.8984C2919.12 35.7346 2852.53 211.419 2845.69 221.909C2841.32 222.208 2840.05 222.328 2835.84 221.263C2832.71 216.624 2819.96 180.567 2817.27 173.475C2798.18 123.199 2780.37 73.8596 2763.94 22.683C2760.86 87.5924 2757.91 157.491 2751.87 222.218L2736.55 222.184C2740.05 150.139 2749.04 74.8228 2752.15 2.99844Z" fill="#313231"/><path d="M2711.15 222.218H2694.86L2667.19 145.656H2580.86C2574.24 168.055 2562.1 199.413 2554.12 222.218L2537.68 222.222L2616.95 3H2632.21L2711.15 222.218ZM2624.18 21.666C2612.99 58.9926 2600.24 95.8348 2585.96 132.096L2625.5 132.1L2662.12 132.098C2649.45 96.9027 2635.7 61.916 2625.62 25.9033C2625.2 24.4117 2624.78 23.1014 2624.18 21.666Z" fill="#313231"/><path d="M2347.34 3H2362.43L2429.14 104.271C2450.97 137.406 2470.75 166.662 2489.19 201.878C2486.36 173.242 2486.37 137.85 2486.33 109.107L2486.34 3H2501.9V221.774C2499.63 222.42 2489.99 222.218 2487.08 222.218C2462.94 184.243 2437.06 146.545 2412.66 108.626C2393.95 79.5503 2376.71 54.4365 2360.82 23.387C2365.1 82.7454 2362.93 161.46 2362.9 222.218H2347.34V3Z" fill="#313231"/><path d="M1827.34 2.99998L1843.66 2.9978V99.344H1964V2.99998H1979.9V222.218H1965.17C1963.13 219.277 1963.99 123.949 1964 112.9H1843.66V222.218H1827.34V2.99998Z" fill="#313231"/><path d="M1098.78 2.99756L1114.9 3.00007V99.3424L1235.1 99.344V2.99998H1251V222.218H1236.94L1236.29 221.951C1234.24 218.786 1235.09 124.013 1235.1 112.9L1114.9 112.902V222.218H1098.78V2.99756Z" fill="#313231"/><path d="M410.097 3H426.001L426.006 94.4196C426.005 101.011 426.036 107.786 425.984 114.365C425.848 131.253 425.674 146.448 428.87 163.138C435.2 193.101 452.676 212.14 483.988 212.345C533.086 212.667 546.517 171.215 545.162 129.285C544.849 119.596 545.115 108.076 545.113 98.2401L545.1 3H561.218V17.5L561.271 96.7022C561.271 113.072 561.706 129.663 560.77 145.913C558.417 191.364 532.119 226.939 483.59 225.836C404.593 224.042 410.043 150.967 410.054 94.6363L410.097 3Z" fill="#313231"/><path d="M1303.1 3H1411.9L1411.91 16.218H1319.22V100.1L1406.66 100.098V113.656H1319.22V139.5V209H1416.9L1416.91 222.218H1303.1V3Z" fill="#313231"/><path d="M1676.1 3H1784.9L1784.91 16.218H1692V100.1H1779.66V113.658L1692 113.656V139.5V209H1789.91V222.217L1676.1 222.218V3Z" fill="#313231"/><path d="M258.997 2.99898L367.218 2.99658L367.225 16.218H274.899L274.9 100.095L362.206 100.1L362.219 113.656H274.9V140.5V209H372.653L372.656 222.218H259L258.997 2.99898Z" fill="#313231"/><path d="M2196 3H2304.22V16.218H2211.9V100.1H2299.21L2299.22 113.656H2211.9V140.5V209H2309.66V222.215L2196 222.218V3Z" fill="#313231"/><path d="M583.782 3H742.218L742.225 16.218H671V150.5V222.218H654.997L654.998 16.218H583.782V3Z" fill="#313231"/></g></svg>
-
-  </div>
-
-  <div class="main-stepper">
-
-    <div class="main-step active"><span class="main-step-num">1</span> Konfiguration</div>
-
-    <div class="main-step"><span class="main-step-num">2</span> Antragsdaten</div>
-
-    <div class="main-step"><span class="main-step-num">3</span> Abschließen</div>
-
-  </div>
-
-  <button class="btn-contact">Kontakt</button>
-
-</header>
-
-
-
-<div class="wrap">
-
-
-
-<div class="page-intro">
-
-  <h1>Schritt 1: Ihr Schutzpaket berechnen</h1>
-
-  <p>Beantworten Sie ein paar Fragen zu Ihrem Verein.<br>In unter 3 Minuten erledigt.</p>
-
-</div>
-
-
-
-<!-- STEP 1 -->
-
-<section class="step visible" id="step-1">
-
-  <div class="stepper">
-
-    <span class="step-pill current"></span>
-
-    <span class="step-pill"></span>
-
-    <span class="step-pill"></span>
-
-    <span class="step-pill"></span>
-
-  </div>
-
-  <h1 class="step-title">Details zur Organisation</h1>
-
-  <p class="step-subtitle">Damit wir Ihnen den passenden Schutz vorschlagen können, beantworten Sie bitte diese Fragen.</p>
-
-
-
-  <div class="field">
-
-    <label class="q"><span class="q-label">Wie ist Ihre Organisation rechtlich organisiert? <span class="required">*</span></span> <span class="help-icon" data-help="legal">i</span></label>
-
-    <select id="legal">
-
-      <option value="">Bitte wählen</option>
-
-      <option value="ev">Eingetragener Verein (e.V.)</option>
-
-      <option value="ggmbh">gemeinnützige GmbH</option>
-
-      <option value="stiftung">Stiftung</option>
-
-      <option value="sonst">Sonstige</option>
-
-    </select>
-
-  </div>
-
-
-
-  <div class="field">
-
-    <label class="q"><span class="q-label">Haushaltssumme <span class="required">*</span></span> <span class="help-icon" data-help="budget">i</span></label>
-
-    <select id="budget">
-
-      <option value="">Bitte wählen</option>
-
-      <option value="20000">bis 20.000 €</option>
-
-      <option value="100000">bis 100.000 €</option>
-
-      <option value="200000">bis 200.000 €</option>
-
-      <option value="300000">bis 300.000 €</option>
-
-      <option value="500000">bis 500.000 €</option>
-
-      <option value="1000000">bis 1.000.000 €</option>
-
-      <option value="1500000">bis 1.500.000 €</option>
-
-      <option value="2000000">bis 2.000.000 €</option>
-
-    </select>
-
-  </div>
-
-
-
-  <div class="field">
-
-    <label class="q"><span class="q-label">Wie viele Menschen sind etwa in Ihrer Organisation aktiv? <span class="required">*</span></span> <span class="help-icon" data-help="members">i</span></label>
-
-    <select id="members">
-
-      <option value="">Bitte wählen</option>
-
-      <option value="250">bis 250 aktive Mitglieder</option>
-
-      <option value="500">bis 500 aktive Mitglieder</option>
-
-      <option value="1000">bis 1.000 aktive Mitglieder</option>
-
-      <option value="2000">bis 2.000 aktive Mitglieder</option>
-
-    </select>
-
-  </div>
-
-
-
-  <div class="field">
-
-    <label class="q"><span class="q-label">Organisationsform (optional)</span> <span class="help-icon" data-help="orgtype">i</span></label>
-
-    <select id="orgtype">
-
-      <option value="">Bitte wählen</option>
-
-      <option value="sport">Sport</option>
-
-      <option value="kultur">Kunst, Kultur, Musik</option>
-
-      <option value="schule">Schule und Kita</option>
-
-      <option value="kirche">Kirchlich oder religiös</option>
-
-      <option value="sozial">Gesundheit und Soziales</option>
-
-      <option value="heimat">Heimatverein oder bürgerschaftliche Aktivitäten</option>
-
-      <option value="umwelt">Umwelt, Natur, Tierschutz</option>
-
-      <option value="freizeit">Freizeit, Geselligkeit, Kleingartenverein</option>
-
-      <option value="fluechtling">Flüchtlingshilfe</option>
-
-      <option value="rettung">Unfall- oder Rettungsdienst, Feuerwehr, DLRG</option>
-
-      <option value="bildung">Außerschulische Jugendarbeit, Erwachsenenbildung, Forschung</option>
-
-      <option value="branche">Branchenverband</option>
-
-      <option value="unbekannt">Nicht bekannt</option>
-
-    </select>
-
-  </div>
-
-
-
-  <div class="btn-row">
-
-    <div></div>
-
-    <button class="primary" id="btn-1" disabled>Beitrag berechnen</button>
-
-  </div>
-
-</section>
-
-
-
-<!-- STEP 2 -->
-
-<section class="step hidden-step" id="step-2">
-
-  <div class="stepper">
-
-    <span class="step-pill done"></span>
-
-    <span class="step-pill current"></span>
-
-    <span class="step-pill"></span>
-
-    <span class="step-pill"></span>
-
-  </div>
-
-  <h1 class="step-title">Ihr Vereins-Schutzbrief</h1>
-
-
-
-  <div class="hero-banner">
-
-    <div class="hero-price-block">
-
-      <div class="hero-price">€ <span id="hero-price">741</span>,–</div>
-
-      <div class="hero-price-label">pro Jahr</div>
-
+  <header class="header">
+    <div class="logo">
+      <svg viewBox="0 0 3121 422" xmlns="http://www.w3.org/2000/svg" aria-label="Deutsches Ehrenamt"><g><path d="M2834.47 294.827H2961.85V422H2834.48L2834.47 294.827Z" fill="#DA1217"/><path d="M2992.15 294.827H3119.53L3119.52 422H2992.15V294.827Z" fill="#DA1217"/><path d="M2676.83 294.827H2804V422H2676.83V294.827Z" fill="#DA1217"/><path d="M997.252 0H1025.75C1041.18 3.76552 1043.36 1.82576 1061.71 9.13323L1056.6 22.6071C1029.62 10.9071 998.924 9.77821 971.427 20.1073C927.695 37.0338 913.359 81.8089 916.358 125.066C921.731 202.548 990.899 228.511 1057.92 201.762L1062.46 214.362C1029.66 231.291 972.959 229.081 942.441 207.731C892.27 172.633 886.902 92.3633 919.731 44.0193C939.474 14.9456 964.628 5.93702 997.252 0Z" fill="#313231"/><path d="M809.52 0H832.507C846.312 2.96876 851.376 3.32434 864.041 9.83314L857.931 23.41C823.27 4.35539 765.358 9.70876 772.65 63.3043C776.376 90.6969 821.94 100.827 842.937 114.186C868.651 130.546 878.803 154.598 869.36 184.734C854.052 232.827 786.399 234.012 750.165 210.731L756.366 197.742C796.221 222.615 865.597 218.122 855.587 154.516C850.928 124.916 808.368 116.977 785.689 103.407C756.985 86.232 747.693 56.962 764.207 26.8752C773.337 10.6592 791.881 4.06557 809.52 0Z" fill="#313231"/><path d="M1501.28 0H1523.74C1537.06 2.55189 1543.05 3.7092 1555.5 9.65532L1549.17 23.5217C1548.73 23.2311 1548.28 22.9488 1547.83 22.6749C1527.75 10.4229 1481.73 7.31014 1469.14 32.331C1444.65 81.0212 1496.84 95.5375 1529.92 111.532C1543.21 118.607 1559.43 133.176 1562.29 148.741C1576.18 224.489 1494.33 241.611 1441.63 211.017L1447.74 197.801C1487.92 222.358 1555.91 218.555 1547.36 154.946C1543.4 125.54 1498.45 116.457 1476.25 102.898C1448.46 85.9223 1438.79 55.1493 1456.19 26.3098C1466.15 9.9171 1483.06 4.01852 1501.28 0Z" fill="#313231"/><path d="M2962.34 2.99713L3121 3.00002V16.218H3049.9V222.218H3033.78V16.218H2962.34V2.99713Z" fill="#313231"/><path d="M0 4.46892L13.0009 4.46246L13.0015 221.177L0 221.173V4.46892Z" fill="#DA1217"/><path d="M97.5889 1.48633C193.385 -4.13098 240.822 61.9472 213.815 154.012C206.046 180.497 186.608 199.817 162.078 211.767C133.275 225.283 80.5863 226.342 49 222.03V6.44727C65.5304 3.17072 80.8195 2.26328 97.5889 1.48633ZM122.081 15.627C112.507 14.8667 97.2617 13.8217 87.583 15.4063C79.2177 16.1666 73.2293 16.7662 64.9014 18.3975L64.9004 208.774C99.271 213.425 138.295 211.402 168.045 192.136C191.936 172.868 200.171 154.223 204.016 124.105C211.421 66.087 182.637 20.4902 122.081 15.627Z" fill="#313231"/><path d="M2073.54 1.48117C2089.33 0.408739 2106.06 2.34605 2120.8 8.02999C2157.46 22.1624 2165.15 71.8985 2138.65 99.1579C2130.29 107.757 2122.39 111.638 2111.43 116.091L2111.97 116.317C2139.17 127.827 2142.99 153.281 2148.8 179.193C2152.32 194.908 2155.12 207.284 2161.16 222.217H2144.84C2137.07 202.815 2134.06 179.32 2128.4 158.757C2115.95 116.514 2083.98 121.663 2048 121.9V222.217H2032V5.71359C2046.86 3.26603 2058.6 2.21482 2073.54 1.48117ZM2096.91 15.7976C2088.37 14.6692 2069.96 13.4885 2061.4 15.3591C2057.18 15.9176 2052.07 16.4494 2048 17.4265V109C2069.13 109.126 2099.4 111.651 2117.19 100.047C2154.12 74.3192 2141.18 21.643 2096.91 15.7976Z" fill="#313231"/><path d="M2752.15 2.99844L2770.42 2.99998C2779.17 23.3058 2788.39 51.5436 2796.54 72.7071C2812.79 114.875 2828.44 157.537 2841.98 200.649C2851.86 167.034 2864.67 134.28 2877.35 101.64L2915.72 2.99792L2934.64 2.99998C2935.6 27.2787 2937.9 53.7568 2939.53 78.1314L2949.14 222.222L2933.32 222.218C2931.43 160.269 2924.59 95.8996 2922.61 32.7558C2922.48 29.6979 2922.22 27.3381 2921.83 24.3023L2920.65 24.8984C2919.12 35.7346 2852.53 211.419 2845.69 221.909C2841.32 222.208 2840.05 222.328 2835.84 221.263C2832.71 216.624 2819.96 180.567 2817.27 173.475C2798.18 123.199 2780.37 73.8596 2763.94 22.683C2760.86 87.5924 2757.91 157.491 2751.87 222.218L2736.55 222.184C2740.05 150.139 2749.04 74.8228 2752.15 2.99844Z" fill="#313231"/><path d="M2711.15 222.218H2694.86L2667.19 145.656H2580.86C2574.24 168.055 2562.1 199.413 2554.12 222.218L2537.68 222.222L2616.95 3H2632.21L2711.15 222.218ZM2624.18 21.666C2612.99 58.9926 2600.24 95.8348 2585.96 132.096L2625.5 132.1L2662.12 132.098C2649.45 96.9027 2635.7 61.916 2625.62 25.9033C2625.2 24.4117 2624.78 23.1014 2624.18 21.666Z" fill="#313231"/><path d="M2347.34 3H2362.43L2429.14 104.271C2450.97 137.406 2470.75 166.662 2489.19 201.878C2486.36 173.242 2486.37 137.85 2486.33 109.107L2486.34 3H2501.9V221.774C2499.63 222.42 2489.99 222.218 2487.08 222.218C2462.94 184.243 2437.06 146.545 2412.66 108.626C2393.95 79.5503 2376.71 54.4365 2360.82 23.387C2365.1 82.7454 2362.93 161.46 2362.9 222.218H2347.34V3Z" fill="#313231"/><path d="M1827.34 2.99998L1843.66 2.9978V99.344H1964V2.99998H1979.9V222.218H1965.17C1963.13 219.277 1963.99 123.949 1964 112.9H1843.66V222.218H1827.34V2.99998Z" fill="#313231"/><path d="M1098.78 2.99756L1114.9 3.00007V99.3424L1235.1 99.344V2.99998H1251V222.218H1236.94L1236.29 221.951C1234.24 218.786 1235.09 124.013 1235.1 112.9L1114.9 112.902V222.218H1098.78V2.99756Z" fill="#313231"/><path d="M410.097 3H426.001L426.006 94.4196C426.005 101.011 426.036 107.786 425.984 114.365C425.848 131.253 425.674 146.448 428.87 163.138C435.2 193.101 452.676 212.14 483.988 212.345C533.086 212.667 546.517 171.215 545.162 129.285C544.849 119.596 545.115 108.076 545.113 98.2401L545.1 3H561.218V17.5L561.271 96.7022C561.271 113.072 561.706 129.663 560.77 145.913C558.417 191.364 532.119 226.939 483.59 225.836C404.593 224.042 410.043 150.967 410.054 94.6363L410.097 3Z" fill="#313231"/><path d="M1303.1 3H1411.9L1411.91 16.218H1319.22V100.1L1406.66 100.098V113.656H1319.22V139.5V209H1416.9L1416.91 222.218H1303.1V3Z" fill="#313231"/><path d="M1676.1 3H1784.9L1784.91 16.218H1692V100.1H1779.66V113.658L1692 113.656V139.5V209H1789.91V222.217L1676.1 222.218V3Z" fill="#313231"/><path d="M258.997 2.99898L367.218 2.99658L367.225 16.218H274.899L274.9 100.095L362.206 100.1L362.219 113.656H274.9V140.5V209H372.653L372.656 222.218H259L258.997 2.99898Z" fill="#313231"/><path d="M2196 3H2304.22V16.218H2211.9V100.1H2299.21L2299.22 113.656H2211.9V140.5V209H2309.66V222.215L2196 222.218V3Z" fill="#313231"/><path d="M583.782 3H742.218L742.225 16.218H671V150.5V222.218H654.997L654.998 16.218H583.782V3Z" fill="#313231"/></g></svg>
+    </div>
+    <div class="main-stepper">
+      <div class="main-step active"><span class="main-step-num">1</span> Konfiguration</div>
+      <div class="main-step"><span class="main-step-num">2</span> Antragsdaten</div>
+      <div class="main-step"><span class="main-step-num">3</span> Abschließen</div>
+    </div>
+    <button class="btn-contact">Kontakt</button>
+  </header>
+
+  <div class="wrap">
+
+    <div class="page-intro">
+      <h1>Schritt 1: Ihr Schutzpaket berechnen</h1>
+      <p>Beantworten Sie ein paar Fragen zu Ihrem Verein.<br>In unter 3 Minuten erledigt.</p>
     </div>
 
-    <div class="hero-pills">
-
-      <div class="hero-pill">Ein Vertrag</div>
-
-      <div class="hero-pill">Ein Ansprechpartner</div>
-
-      <div class="hero-pill">Alle notwendigen Versicherungen</div>
-
-      <div class="hero-pill">Inklusive Rechts- und Vorstandsberatung</div>
-
-    </div>
-
-  </div>
-
-
-
-  <!-- Recap "Ihre Angaben" -->
-
-  <div class="recap-card">
-
-    <div class="recap-header">
-
-      <div class="recap-title">Ihre Angaben</div>
-
-      <button class="edit-link" id="edit-s1">✎ Ändern</button>
-
-    </div>
-
-    <div class="recap-tags" id="recap-tags-s2"></div>
-
-  </div>
-
-
-
-  <h2 class="section-head">Inklusivleistungen</h2>
-
-  <div class="inclusive-grid">
-
-    <div class="inclusive-card">
-
-      
-
-      <span class="help-icon card-help" data-help="vereinshaftpflicht">i</span>
-
-      <div class="card-title">Vereinshaftpflicht</div>
-
-      <div class="card-desc">Schützt den Verein bei Personen- und Sachschäden, die im Vereinsalltag entstehen.</div>
-
-    </div>
-
-    <div class="inclusive-card">
-
-      
-
-      <span class="help-icon card-help" data-help="veranstalterhaftpflicht">i</span>
-
-      <div class="card-title">Veranstalterhaftpflicht</div>
-
-      <div class="card-desc">Zusätzlicher Schutz für Vereinsveranstaltungen wie Feste, Turniere oder Ausflüge.</div>
-
-    </div>
-
-    <div class="inclusive-card">
-
-      
-
-      <span class="help-icon card-help" data-help="vermoegen">i</span>
-
-      <div class="card-title">Vermögensschadenhaftpflicht</div>
-
-      <div class="card-desc">Sichert finanzielle Schäden ab, die durch Fehler oder Versäumnisse im Verein entstehen.</div>
-
-    </div>
-
-    <div class="inclusive-card hidden" id="card-do-auto">
-
-      
-
-      <span class="help-icon card-help" data-help="do">i</span>
-
-      <div class="card-title">Vorstandshaftpflicht (D&amp;O)</div>
-
-      <div class="card-desc">Schützt Vorstände persönlich vor Haftungsansprüchen.</div>
-
-    </div>
-
-    <div class="inclusive-card">
-
-      
-
-      <span class="help-icon card-help" data-help="rechtsberatung">i</span>
-
-      <div class="card-title">Rechtsberatung</div>
-
-      <div class="card-desc">Fachanwälte für Vereins- und Steuerrecht, z. B. zur Prüfung wichtiger Verträge.</div>
-
-    </div>
-
-    <div class="inclusive-card">
-
-      
-
-      <span class="help-icon card-help" data-help="vorstandsberatung">i</span>
-
-      <div class="card-title">Vorstandsberatung</div>
-
-      <div class="card-desc">Praxisnahe Unterstützung bei Organisation und Finanzen im Vereinsalltag.</div>
-
-    </div>
-
-  </div>
-
-
-
-  <h2 class="section-head">Optionale Ergänzungen</h2>
-
-
-
-  <div class="optional-grid">
-
-    <!-- D&O optional (nur wenn HH < 200k) -->
-
-    <div class="optional-card recommended" id="opt-do" style="display:none;">
-
-      <div class="recommendation-badge">Unsere Empfehlung</div>
-
-      <span class="help-icon opt-card-help" data-help="do"></span>
-
-      <div class="opt-title">Vorstandshaftpflicht (D&amp;O)</div>
-
-      <div class="opt-desc">Persönlicher Haftungsschutz für alle Vereinsvorstände.</div>
-
-      <div class="opt-spacer"></div>
-
-      <div class="opt-price" id="do-price">€ 129,– / Jahr</div>
-
-      <div class="opt-action">
-
-        <span class="opt-action-label" data-action-label="do">Hinzufügen</span>
-
-        <div class="checkbox" data-key="do"></div>
-
+    <section class="step visible" id="step-1">
+      <div class="stepper">
+        <span class="step-pill current"></span>
+        <span class="step-pill"></span>
+        <span class="step-pill"></span>
+        <span class="step-pill"></span>
+      </div>
+      <h1 class="step-title">Details zur Organisation</h1>
+      <p class="step-subtitle">Damit wir Ihnen den passenden Schutz vorschlagen können, beantworten Sie bitte diese Fragen.</p>
+
+      <div class="field">
+        <label class="q"><span class="q-label">Wie ist Ihre Organisation rechtlich organisiert? <span class="required">*</span></span> <span class="help-icon" data-help="legal">i</span></label>
+        <select id="legal">
+          <option value="">Bitte wählen</option>
+          <option value="ev">Eingetragener Verein (e.V.)</option>
+          <option value="ggmbh">gemeinnützige GmbH</option>
+          <option value="stiftung">Stiftung</option>
+          <option value="sonst">Sonstige</option>
+        </select>
       </div>
 
-    </div>
-
-
-
-    <div class="optional-card" id="opt-rs">
-
-      <span class="help-icon opt-card-help" data-help="rs"></span>
-
-      <div class="opt-title">Rechtsschutz</div>
-
-      <div class="opt-desc">Übernimmt die Kosten für Anwalt und Gericht.</div>
-
-      <div class="opt-spacer"></div>
-
-      <div class="opt-price" id="rs-price">€ 150,– / Jahr</div>
-
-      <div class="opt-action">
-
-        <span class="opt-action-label" data-action-label="rs">Hinzufügen</span>
-
-        <div class="checkbox" data-key="rs"></div>
-
+      <div class="field">
+        <label class="q"><span class="q-label">Haushaltssumme <span class="required">*</span></span> <span class="help-icon" data-help="budget">i</span></label>
+        <select id="budget">
+          <option value="">Bitte wählen</option>
+          <option value="20000">bis 20.000 €</option>
+          <option value="100000">bis 100.000 €</option>
+          <option value="200000">bis 200.000 €</option>
+          <option value="300000">bis 300.000 €</option>
+          <option value="500000">bis 500.000 €</option>
+          <option value="1000000">bis 1.000.000 €</option>
+          <option value="1500000">bis 1.500.000 €</option>
+          <option value="2000000">bis 2.000.000 €</option>
+        </select>
       </div>
 
-    </div>
-
-
-
-    <div class="optional-card" id="opt-rw">
-
-      <span class="help-icon opt-card-help" data-help="rw"></span>
-
-      <div class="opt-title">Rückwirkende Absicherung</div>
-
-      <div class="opt-desc">Deckt Vermögensschäden bis zu 3 Jahre rückwirkend ab.</div>
-
-      <div class="opt-spacer"></div>
-
-      <div class="opt-price" id="rw-price">€ 350,– / einmalig</div>
-
-      <div class="opt-action">
-
-        <span class="opt-action-label" data-action-label="rw">Hinzufügen</span>
-
-        <div class="checkbox" data-key="rw"></div>
-
+      <div class="field">
+        <label class="q"><span class="q-label">Wie viele Menschen sind etwa in Ihrer Organisation aktiv? <span class="required">*</span></span> <span class="help-icon" data-help="members">i</span></label>
+        <select id="members">
+          <option value="">Bitte wählen</option>
+          <option value="250">bis 250 aktive Mitglieder</option>
+          <option value="500">bis 500 aktive Mitglieder</option>
+          <option value="1000">bis 1.000 aktive Mitglieder</option>
+          <option value="2000">bis 2.000 aktive Mitglieder</option>
+        </select>
       </div>
 
-    </div>
-
-  </div>
-
-
-
-  <div class="beitrag-block">
-
-    <div class="beitrag-title">Beitrag-Vorschau</div>
-
-    <div id="beitrag-rows"></div>
-
-    <div class="info-box">Der finale Beitrag hängt vom gewählten Startzeitpunkt ab (nächster Schritt). Verschobene oder ausgesetzte Bausteine reduzieren den Beitrag.</div>
-
-  </div>
-
-
-
-  <div class="btn-row">
-
-    <button class="secondary" id="btn-2-back">Zurück</button>
-
-    <button class="primary" id="btn-2">Weiter zur Startdatum</button>
-
-  </div>
-
-</section>
-
-
-
-<!-- STEP 3 -->
-
-<section class="step hidden-step" id="step-3">
-
-  <div class="stepper">
-
-    <span class="step-pill done"></span>
-
-    <span class="step-pill done"></span>
-
-    <span class="step-pill current"></span>
-
-    <span class="step-pill"></span>
-
-  </div>
-
-  <h1 class="step-title">Startdatum und Vorversicherung</h1>
-
-  <p class="step-subtitle">Wählen Sie, wann Ihr Vereins-Schutzbrief beginnen soll.</p>
-
-
-
-  <div class="recap-card">
-
-    <div class="recap-header">
-
-      <div class="recap-title">Ihr Paket</div>
-
-      <button class="edit-link" id="edit-s2">✎ Anpassen</button>
-
-    </div>
-
-    <div class="recap-tags" id="recap-tags-s3"></div>
-
-  </div>
-
-
-
-  <div class="field">
-
-    <label class="q"><span class="q-label">Wann soll Ihr Vereins-Schutzbrief beginnen? <span class="required">*</span></span> <span class="help-icon" data-help="start">i</span></label>
-
-    <div class="radio-group">
-
-      <label class="radio-row"><input type="radio" name="start" value="sofort" checked> Ab sofort</label>
-
-      <label class="radio-row"><input type="radio" name="start" value="datum"> Zu einem späteren Datum</label>
-
-      <div class="indent hidden" id="start-date-wrap">
-
-        <input type="date" id="start-date">
-
+      <div class="field">
+        <label class="q"><span class="q-label">Organisationsform (optional)</span> <span class="help-icon" data-help="orgtype">i</span></label>
+        <select id="orgtype">
+          <option value="">Bitte wählen</option>
+          <option value="sport">Sport</option>
+          <option value="kultur">Kunst, Kultur, Musik</option>
+          <option value="schule">Schule und Kita</option>
+          <option value="kirche">Kirchlich oder religiös</option>
+          <option value="sozial">Gesundheit und Soziales</option>
+          <option value="heimat">Heimatverein oder bürgerschaftliche Aktivitäten</option>
+          <option value="umwelt">Umwelt, Natur, Tierschutz</option>
+          <option value="freizeit">Freizeit, Geselligkeit, Kleingartenverein</option>
+          <option value="fluechtling">Flüchtlingshilfe</option>
+          <option value="rettung">Unfall- oder Rettungsdienst, Feuerwehr, DLRG</option>
+          <option value="bildung">Außerschulische Jugendarbeit, Erwachsenenbildung, Forschung</option>
+          <option value="branche">Branchenverband</option>
+          <option value="unbekannt">Nicht bekannt</option>
+        </select>
       </div>
 
-    </div>
+      <div class="btn-row">
+        <div></div>
+        <button class="primary" id="btn-1" disabled>Beitrag berechnen</button>
+      </div>
+    </section>
 
-  </div>
+    <section class="step hidden-step" id="step-2">
+      <div class="stepper">
+        <span class="step-pill done"></span>
+        <span class="step-pill current"></span>
+        <span class="step-pill"></span>
+        <span class="step-pill"></span>
+      </div>
+      <h1 class="step-title">Ihr Vereins-Schutzbrief</h1>
 
+      <div class="hero-banner">
+        <div class="hero-price-block">
+          <div class="hero-price">€ <span id="hero-price">741</span>,–</div>
+          <div class="hero-price-label">pro Jahr</div>
+        </div>
+        <div class="hero-pills">
+          <div class="hero-pill">Ein Vertrag</div>
+          <div class="hero-pill">Ein Ansprechpartner</div>
+          <div class="hero-pill">Alle notwendigen Versicherungen</div>
+          <div class="hero-pill">Inklusive Rechts- und Vorstandsberatung</div>
+        </div>
+      </div>
 
+      <div class="recap-card">
+        <div class="recap-header">
+          <div class="recap-title">Ihre Angaben</div>
+          <button class="edit-link" id="edit-s1">✎ Ändern</button>
+        </div>
+        <div class="recap-tags" id="recap-tags-s2"></div>
+      </div>
 
-  <div class="field">
+      <h2 class="section-head">Inklusivleistungen</h2>
+      <div class="inclusive-grid">
+        <div class="inclusive-card">
+          <span class="help-icon card-help" data-help="vereinshaftpflicht">i</span>
+          <div class="card-title">Vereinshaftpflicht</div>
+          <div class="card-desc">Schützt den Verein bei Personen- und Sachschäden, die im Vereinsalltag entstehen.</div>
+        </div>
+        <div class="inclusive-card">
+          <span class="help-icon card-help" data-help="veranstalterhaftpflicht">i</span>
+          <div class="card-title">Veranstalterhaftpflicht</div>
+          <div class="card-desc">Zusätzlicher Schutz für Vereinsveranstaltungen wie Feste, Turniere oder Ausflüge.</div>
+        </div>
+        <div class="inclusive-card">
+          <span class="help-icon card-help" data-help="vermoegen">i</span>
+          <div class="card-title">Vermögensschadenhaftpflicht</div>
+          <div class="card-desc">Sichert finanzielle Schäden ab, die durch Fehler oder Versäumnisse im Verein entstehen.</div>
+        </div>
+        <div class="inclusive-card hidden" id="card-do-auto">
+          <span class="help-icon card-help" data-help="do">i</span>
+          <div class="card-title">Vorstandshaftpflicht (D&amp;O)</div>
+          <div class="card-desc">Schützt Vorstände persönlich vor Haftungsansprüchen.</div>
+        </div>
+        <div class="inclusive-card">
+          <span class="help-icon card-help" data-help="rechtsberatung">i</span>
+          <div class="card-title">Rechtsberatung</div>
+          <div class="card-desc">Fachanwälte für Vereins- und Steuerrecht, z. B. zur Prüfung wichtiger Verträge.</div>
+        </div>
+        <div class="inclusive-card">
+          <span class="help-icon card-help" data-help="vorstandsberatung">i</span>
+          <div class="card-title">Vorstandsberatung</div>
+          <div class="card-desc">Praxisnahe Unterstützung bei Organisation und Finanzen im Vereinsalltag.</div>
+        </div>
+      </div>
 
-    <label class="q"><span class="q-label">Möchten Sie den Start einzelner Bausteine verschieben oder aussetzen? <span class="required">*</span></span> <span class="help-icon" data-help="defer">i</span></label>
+      <h2 class="section-head">Optionale Ergänzungen</h2>
 
-    <div class="radio-group">
-
-      <label class="radio-row"><input type="radio" name="defer" value="nein" checked> Nein, alles startet am gewählten Datum</label>
-
-      <label class="radio-row"><input type="radio" name="defer" value="ja"> Ja, ich möchte einen Baustein anpassen</label>
-
-    </div>
-
-  </div>
-
-
-
-  <div id="modules" class="hidden">
-
-    <div class="rule-hint">
-
-      Sie können nur einen der beiden <strong>Pflichtbausteine</strong> (Haftpflicht ODER Vermögensschaden) verschieben oder aussetzen. Mindestens einer muss zwingend gemeinsam mit dem Vereins-Schutzbrief starten.
-
-    </div>
-
-
-
-    <div class="module" id="mod-hp">
-
-      <span class="module-tag">Pflichtbaustein</span>
-
-      <h3>Haftpflicht &amp; Veranstalterhaftpflicht <span class="help-icon" data-help="hp">i</span></h3>
-
-      <div class="radio-group">
-
-        <label class="radio-row"><input type="radio" name="hp" value="default" checked> Start am <strong id="hp-default-date">–</strong></label>
-
-        <label class="radio-row"><input type="radio" name="hp" value="aussetzen"> Permanent aussetzen <span class="help-icon" data-help="aussetzen">i</span></label>
-
-        <label class="radio-row"><input type="radio" name="hp" value="verschieben"> Beginn verschieben</label>
-
-        <div class="indent hidden" data-shift="hp">
-
-          <input type="date" data-shift-date="hp">
-
-          <p class="hint">Max. 12 Monate nach Startdatum.</p>
-
+      <div class="optional-grid">
+        <div class="optional-card recommended" id="opt-do" style="display:none;">
+          <div class="recommendation-badge">Unsere Empfehlung</div>
+          <span class="help-icon opt-card-help" data-help="do"></span>
+          <div class="opt-title">Vorstandshaftpflicht (D&amp;O)</div>
+          <div class="opt-desc">Persönlicher Haftungsschutz für alle Vereinsvorstände.</div>
+          <div class="opt-spacer"></div>
+          <div class="opt-price" id="do-price">€ 129,– / Jahr</div>
+          <div class="opt-action">
+            <span class="opt-action-label" data-action-label="do">Hinzufügen</span>
+            <div class="checkbox" data-key="do"></div>
+          </div>
         </div>
 
-      </div>
-
-    </div>
-
-
-
-    <div class="module" id="mod-vs">
-
-      <span class="module-tag">Pflichtbaustein</span>
-
-      <h3 id="vs-title">Vermögensschadenhaftpflichtversicherung <span class="help-icon" data-help="vs">i</span></h3>
-
-      <div class="radio-group">
-
-        <label class="radio-row"><input type="radio" name="vs" value="default" checked> Start am <strong id="vs-default-date">–</strong></label>
-
-        <label class="radio-row"><input type="radio" name="vs" value="aussetzen"> Permanent aussetzen <span class="help-icon" data-help="aussetzen">i</span></label>
-
-        <label class="radio-row"><input type="radio" name="vs" value="verschieben"> Beginn verschieben</label>
-
-        <div class="indent hidden" data-shift="vs">
-
-          <input type="date" data-shift-date="vs">
-
-          <p class="hint">Max. 12 Monate nach Startdatum.</p>
-
+        <div class="optional-card" id="opt-rs">
+          <span class="help-icon opt-card-help" data-help="rs"></span>
+          <div class="opt-title">Rechtsschutz</div>
+          <div class="opt-desc">Übernimmt die Kosten für Anwalt und Gericht.</div>
+          <div class="opt-spacer"></div>
+          <div class="opt-price" id="rs-price">€ 150,– / Jahr</div>
+          <div class="opt-action">
+            <span class="opt-action-label" data-action-label="rs">Hinzufügen</span>
+            <div class="checkbox" data-key="rs"></div>
+          </div>
         </div>
 
+        <div class="optional-card" id="opt-rw">
+          <span class="help-icon opt-card-help" data-help="rw"></span>
+          <div class="opt-title">Rückwirkende Absicherung</div>
+          <div class="opt-desc">Deckt Vermögensschäden bis zu 3 Jahre rückwirkend ab.</div>
+          <div class="opt-spacer"></div>
+          <div class="opt-price" id="rw-price">€ 350,– / einmalig</div>
+          <div class="opt-action">
+            <span class="opt-action-label" data-action-label="rw">Hinzufügen</span>
+            <div class="checkbox" data-key="rw"></div>
+          </div>
+        </div>
       </div>
 
-      <div class="warn-hint hidden" id="vs-warn">
-
-        Wenn Sie diesen Baustein aussetzen, fällt die <strong>Rückwirkende Absicherung</strong> aus Ihrem Paket. Sie baut auf der Vermögensschadenhaftpflicht auf und ist ohne diese nicht möglich.
-
+      <div class="beitrag-block">
+        <div class="beitrag-title">Beitrag-Vorschau</div>
+        <div id="beitrag-rows"></div>
+        <div class="info-box">Der finale Beitrag hängt vom gewählten Startzeitpunkt ab (nächster Schritt). Verschobene oder ausgesetzte Bausteine reduzieren den Beitrag.</div>
       </div>
 
-    </div>
+      <div class="btn-row">
+        <button class="secondary" id="btn-2-back">Zurück</button>
+        <button class="primary" id="btn-2">Weiter zur Startdatum</button>
+      </div>
+    </section>
 
+    <section class="step hidden-step" id="step-3">
+      <div class="stepper">
+        <span class="step-pill done"></span>
+        <span class="step-pill done"></span>
+        <span class="step-pill current"></span>
+        <span class="step-pill"></span>
+      </div>
+      <h1 class="step-title">Startdatum und Vorversicherung</h1>
+      <p class="step-subtitle">Wählen Sie, wann Ihr Vereins-Schutzbrief beginnen soll.</p>
 
+      <div class="recap-card">
+        <div class="recap-header">
+          <div class="recap-title">Ihr Paket</div>
+          <button class="edit-link" id="edit-s2">✎ Anpassen</button>
+        </div>
+        <div class="recap-tags" id="recap-tags-s3"></div>
+      </div>
 
-    <div class="module hidden" id="mod-rs">
+      <div class="field">
+        <label class="q"><span class="q-label">Wann soll Ihr Vereins-Schutzbrief beginnen? <span class="required">*</span></span> <span class="help-icon" data-help="start">i</span></label>
+        <div class="radio-group">
+          <label class="radio-row"><input type="radio" name="start" value="sofort" checked> Ab sofort</label>
+          <label class="radio-row"><input type="radio" name="start" value="datum"> Zu einem späteren Datum</label>
+          <div class="indent hidden" id="start-date-wrap">
+            <input type="date" id="start-date">
+          </div>
+        </div>
+      </div>
 
-      <span class="module-tag">Optionale Zusatzleistung</span>
+      <div class="field">
+        <label class="q"><span class="q-label">Möchten Sie den Start einzelner Bausteine verschieben oder aussetzen? <span class="required">*</span></span> <span class="help-icon" data-help="defer">i</span></label>
+        <div class="radio-group">
+          <label class="radio-row"><input type="radio" name="defer" value="nein" checked> Nein, alles startet am gewählten Datum</label>
+          <label class="radio-row"><input type="radio" name="defer" value="ja"> Ja, ich möchte einen Baustein anpassen</label>
+        </div>
+      </div>
 
-      <h3>Rechtsschutzversicherung <span class="help-icon" data-help="rs">i</span></h3>
-
-      <div class="radio-group">
-
-        <label class="radio-row"><input type="radio" name="rs" value="default" checked> Start am <strong id="rs-default-date">–</strong></label>
-
-        <label class="radio-row"><input type="radio" name="rs" value="verschieben"> Beginn verschieben</label>
-
-        <div class="indent hidden" data-shift="rs">
-
-          <input type="date" data-shift-date="rs">
-
-          <p class="hint">Max. 12 Monate nach Startdatum.</p>
-
+      <div id="modules" class="hidden">
+        <div class="rule-hint">
+          Sie können nur einen der beiden <strong>Pflichtbausteine</strong> (Haftpflicht ODER Vermögensschaden) verschieben oder aussetzen. Mindestens einer muss zwingend gemeinsam mit dem Vereins-Schutzbrief starten.
         </div>
 
-      </div>
-
-    </div>
-
-
-
-    <div class="module hidden" id="mod-do">
-
-      <span class="module-tag">Optionale Zusatzleistung</span>
-
-      <h3>D&amp;O-Versicherung <span class="help-icon" data-help="do">i</span></h3>
-
-      <div class="radio-group">
-
-        <label class="radio-row"><input type="radio" name="do" value="default" checked> Start am <strong id="do-default-date">–</strong></label>
-
-        <label class="radio-row"><input type="radio" name="do" value="verschieben"> Beginn verschieben</label>
-
-        <div class="indent hidden" data-shift="do">
-
-          <input type="date" data-shift-date="do">
-
-          <p class="hint">Max. 12 Monate nach Startdatum.</p>
-
+        <div class="module" id="mod-hp">
+          <span class="module-tag">Pflichtbaustein</span>
+          <h3>Haftpflicht &amp; Veranstalterhaftpflicht <span class="help-icon" data-help="hp">i</span></h3>
+          <div class="radio-group">
+            <label class="radio-row"><input type="radio" name="hp" value="default" checked> Start am <strong id="hp-default-date">–</strong></label>
+            <label class="radio-row"><input type="radio" name="hp" value="aussetzen"> Permanent aussetzen <span class="help-icon" data-help="aussetzen">i</span></label>
+            <label class="radio-row"><input type="radio" name="hp" value="verschieben"> Beginn verschieben</label>
+            <div class="indent hidden" data-shift="hp">
+              <input type="date" data-shift-date="hp">
+              <p class="hint">Max. 12 Monate nach Startdatum.</p>
+            </div>
+          </div>
         </div>
 
+        <div class="module" id="mod-vs">
+          <span class="module-tag">Pflichtbaustein</span>
+          <h3 id="vs-title">Vermögensschadenhaftpflichtversicherung <span class="help-icon" data-help="vs">i</span></h3>
+          <div class="radio-group">
+            <label class="radio-row"><input type="radio" name="vs" value="default" checked> Start am <strong id="vs-default-date">–</strong></label>
+            <label class="radio-row"><input type="radio" name="vs" value="aussetzen"> Permanent aussetzen <span class="help-icon" data-help="aussetzen">i</span></label>
+            <label class="radio-row"><input type="radio" name="vs" value="verschieben"> Beginn verschieben</label>
+            <div class="indent hidden" data-shift="vs">
+              <input type="date" data-shift-date="vs">
+              <p class="hint">Max. 12 Monate nach Startdatum.</p>
+            </div>
+          </div>
+          <div class="warn-hint hidden" id="vs-warn">
+            Wenn Sie diesen Baustein aussetzen, fällt die <strong>Rückwirkende Absicherung</strong> aus Ihrem Paket. Sie baut auf der Vermögensschadenhaftpflicht auf und ist ohne diese nicht möglich.
+          </div>
+        </div>
+
+        <div class="module hidden" id="mod-rs">
+          <span class="module-tag">Optionale Zusatzleistung</span>
+          <h3>Rechtsschutzversicherung <span class="help-icon" data-help="rs">i</span></h3>
+          <div class="radio-group">
+            <label class="radio-row"><input type="radio" name="rs" value="default" checked> Start am <strong id="rs-default-date">–</strong></label>
+            <label class="radio-row"><input type="radio" name="rs" value="verschieben"> Beginn verschieben</label>
+            <div class="indent hidden" data-shift="rs">
+              <input type="date" data-shift-date="rs">
+              <p class="hint">Max. 12 Monate nach Startdatum.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="module hidden" id="mod-do">
+          <span class="module-tag">Optionale Zusatzleistung</span>
+          <h3>D&amp;O-Versicherung <span class="help-icon" data-help="do">i</span></h3>
+          <div class="radio-group">
+            <label class="radio-row"><input type="radio" name="do" value="default" checked> Start am <strong id="do-default-date">–</strong></label>
+            <label class="radio-row"><input type="radio" name="do" value="verschieben"> Beginn verschieben</label>
+            <div class="indent hidden" data-shift="do">
+              <input type="date" data-shift-date="do">
+              <p class="hint">Max. 12 Monate nach Startdatum.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="module hidden" id="mod-rw">
+          <span class="module-tag">Optionale Zusatzleistung</span>
+          <h3>Rückwirkende Absicherung <span class="help-icon" data-help="rw">i</span></h3>
+          <p style="font-size:13px;color:var(--text-secondary);font-style:italic;" id="rw-info">Startet zwingend zusammen mit der Vermögensschadenhaftpflicht am <strong id="rw-date">–</strong>. Datum nicht änderbar.</p>
+          <div class="warn-hint hidden" id="rw-warn">
+            <strong>Achtung:</strong> Da die <strong>Vermögensschadenhaftpflicht</strong> ausgesetzt ist, kann die Rückwirkende Absicherung nicht in Anspruch genommen werden. Sie wird mit der Bestätigung aus Ihrem Paket entfernt.
+          </div>
+        </div>
       </div>
 
-    </div>
-
-
-
-    <div class="module hidden" id="mod-rw">
-
-      <span class="module-tag">Optionale Zusatzleistung</span>
-
-      <h3>Rückwirkende Absicherung <span class="help-icon" data-help="rw">i</span></h3>
-
-      <p style="font-size:13px;color:var(--text-secondary);font-style:italic;" id="rw-info">Startet zwingend zusammen mit der Vermögensschadenhaftpflicht am <strong id="rw-date">–</strong>. Datum nicht änderbar.</p>
-
-      <div class="warn-hint hidden" id="rw-warn">
-
-        <strong>Achtung:</strong> Da die <strong>Vermögensschadenhaftpflicht</strong> ausgesetzt ist, kann die Rückwirkende Absicherung nicht in Anspruch genommen werden. Sie wird mit der Bestätigung aus Ihrem Paket entfernt.
-
+      <div class="zusammenfassung">
+        <div class="zusammenfassung-title">Zusammenfassung Startzeitpunkte</div>
+        <div id="zus-rows"></div>
       </div>
 
-    </div>
+      <div class="btn-row">
+        <button class="secondary" id="btn-3-back">Zurück</button>
+        <button class="primary" id="btn-3">Weiter zur Übersicht</button>
+      </div>
+    </section>
+
+    <section class="step hidden-step" id="step-4">
+      <div class="stepper">
+        <span class="step-pill done"></span>
+        <span class="step-pill done"></span>
+        <span class="step-pill done"></span>
+        <span class="step-pill current"></span>
+      </div>
+      <h1 class="step-title">Übersicht</h1>
+      <p class="step-subtitle">Bitte prüfen Sie Ihre Angaben. Sie können jeden Abschnitt nachträglich anpassen.</p>
+
+      <div class="overview-card">
+        <div class="ov-card-head">
+          <div class="ov-card-title">Ihre Organisation</div>
+          <button class="edit-link" id="ov-edit-1">✎ Anpassen</button>
+        </div>
+        <div id="ov-organisation"></div>
+      </div>
+
+      <div class="overview-card">
+        <div class="ov-card-head">
+          <div class="ov-card-title">Ihr Paket</div>
+          <button class="edit-link" id="ov-edit-2">✎ Anpassen</button>
+        </div>
+        <div id="ov-paket"></div>
+      </div>
+
+      <div class="overview-card">
+        <div class="ov-card-head">
+          <div class="ov-card-title">Startzeitpunkte</div>
+          <button class="edit-link" id="ov-edit-3">✎ Anpassen</button>
+        </div>
+        <div id="ov-startzeit"></div>
+      </div>
+
+      <div class="overview-card">
+        <div class="ov-card-head">
+          <div class="ov-card-title">Kosten</div>
+        </div>
+        <div id="ov-kosten"></div>
+      </div>
+
+      <div class="btn-row">
+        <button class="secondary" id="btn-4-back">Zurück</button>
+        <div class="btn-row-right">
+          <button class="secondary" id="btn-4-save">Konfiguration speichern</button>
+          <button class="primary" id="btn-4">Weiter zu Antragsdaten</button>
+        </div>
+      </div>
+    </section>
 
   </div>
 
-
-
-  <div class="zusammenfassung">
-
-    <div class="zusammenfassung-title">Zusammenfassung Startzeitpunkte</div>
-
-    <div id="zus-rows"></div>
-
+  <div class="modal-backdrop hidden" id="save-modal">
+    <div class="modal">
+      <button class="modal-close" id="save-close">×</button>
+      <div class="modal-title">Konfiguration per E-Mail speichern</div>
+      <div class="modal-body">
+        Wir senden Ihnen Ihre aktuelle Konfiguration als Link an Ihre E-Mail-Adresse. So können Sie später jederzeit dort weitermachen, wo Sie aufgehört haben.
+      </div>
+      <div class="field">
+        <label class="q" for="save-email"><span class="q-label">Ihre E-Mail-Adresse</span></label>
+        <input type="email" id="save-email" placeholder="name@beispiel.de" style="width:100%;border:1px solid var(--border-soft);padding:12px 14px;font-size:14px;font-family:inherit;background:#fff;border-radius:8px;color:var(--text-primary);">
+      </div>
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:20px;line-height:1.5;">Mit Klick auf "Senden" stimmen Sie zu, dass wir Ihnen einen einmaligen Link mit Ihrer Konfiguration zusenden. Es findet keine Newsletter-Anmeldung statt.</div>
+      <div class="modal-actions">
+        <button class="primary" id="save-send">Link per E-Mail senden</button>
+        <button class="secondary" id="save-cancel">Abbrechen</button>
+      </div>
+    </div>
   </div>
 
-
-
-  <div class="btn-row">
-
-    <button class="secondary" id="btn-3-back">Zurück</button>
-
-    <button class="primary" id="btn-3">Weiter zur Übersicht</button>
-
+  <div class="modal-backdrop hidden" id="save-success-modal">
+    <div class="modal">
+      <button class="modal-close" id="save-success-close">×</button>
+      <div class="modal-title">E-Mail wurde versendet</div>
+      <div class="modal-body">
+        Wir haben Ihre Konfiguration an <strong id="save-email-shown"></strong> gesendet. Prüfen Sie bitte auch Ihren Spam-Ordner, falls die Nachricht nicht innerhalb weniger Minuten ankommt.
+      </div>
+      <div class="modal-actions">
+        <button class="primary" id="save-success-ok">Weiter im Konfigurator</button>
+      </div>
+    </div>
   </div>
 
-</section>
-
-
-
-<!-- STEP 4 -->
-
-<section class="step hidden-step" id="step-4">
-
-  <div class="stepper">
-
-    <span class="step-pill done"></span>
-
-    <span class="step-pill done"></span>
-
-    <span class="step-pill done"></span>
-
-    <span class="step-pill current"></span>
-
+  <div class="modal-backdrop hidden" id="help-modal">
+    <div class="modal help-modal-content">
+      <button class="modal-close" id="help-close">×</button>
+      <div class="modal-icon-badge">i</div>
+      <div id="help-content"></div>
+    </div>
   </div>
 
-  <h1 class="step-title">Übersicht</h1>
-
-  <p class="step-subtitle">Bitte prüfen Sie Ihre Angaben. Sie können jeden Abschnitt nachträglich anpassen.</p>
-
-
-
-  <div class="overview-card">
-
-    <div class="ov-card-head">
-
-      <div class="ov-card-title">Ihre Organisation</div>
-
-      <button class="edit-link" id="ov-edit-1">✎ Anpassen</button>
-
+  <div class="modal-backdrop hidden" id="modal-rw-removal">
+    <div class="modal">
+      <div class="modal-title">Rückwirkende Absicherung wird entfernt</div>
+      <div class="modal-body">
+        Sie haben die Vermögensschadenhaftpflicht ausgesetzt. Damit fällt die Rückwirkende Absicherung aus Ihrem Paket, da sie auf diesem Baustein aufbaut.
+      </div>
+      <div class="modal-actions">
+        <button class="primary" id="modal-confirm">Verstanden, weiter</button>
+        <button class="secondary" id="modal-cancel">Zurück zur Auswahl</button>
+      </div>
     </div>
-
-    <div id="ov-organisation"></div>
-
   </div>
 
-
-
-  <div class="overview-card">
-
-    <div class="ov-card-head">
-
-      <div class="ov-card-title">Ihr Paket</div>
-
-      <button class="edit-link" id="ov-edit-2">✎ Anpassen</button>
-
-    </div>
-
-    <div id="ov-paket"></div>
-
-  </div>
-
-
-
-  <div class="overview-card">
-
-    <div class="ov-card-head">
-
-      <div class="ov-card-title">Startzeitpunkte</div>
-
-      <button class="edit-link" id="ov-edit-3">✎ Anpassen</button>
-
-    </div>
-
-    <div id="ov-startzeit"></div>
-
-  </div>
-
-
-
-  <div class="overview-card">
-
-    <div class="ov-card-head">
-
-      <div class="ov-card-title">Kosten</div>
-
-    </div>
-
-    <div id="ov-kosten"></div>
-
-  </div>
-
-
-
-  <div class="btn-row">
-
-    <button class="secondary" id="btn-4-back">Zurück</button>
-
-    <div class="btn-row-right">
-
-      <button class="secondary" id="btn-4-save">Konfiguration speichern</button>
-
-      <button class="primary" id="btn-4">Weiter zu Antragsdaten</button>
-
-    </div>
-
-  </div>
-
-</section>
-
-
-
-</div>
-
-
-
-<!-- MODAL: Konfiguration speichern -->
-
-<div class="modal-backdrop hidden" id="save-modal">
-
-  <div class="modal">
-
-    <button class="modal-close" id="save-close">×</button>
-
-    <div class="modal-title">Konfiguration per E-Mail speichern</div>
-
-    <div class="modal-body">
-
-      Wir senden Ihnen Ihre aktuelle Konfiguration als Link an Ihre E-Mail-Adresse. So können Sie später jederzeit dort weitermachen, wo Sie aufgehört haben.
-
-    </div>
-
-    <div class="field">
-
-      <label class="q" for="save-email"><span class="q-label">Ihre E-Mail-Adresse</span></label>
-
-      <input type="email" id="save-email" placeholder="name@beispiel.de" style="width:100%;border:1px solid var(--border-soft);padding:12px 14px;font-size:14px;font-family:inherit;background:#fff;border-radius:8px;color:var(--text-primary);">
-
-    </div>
-
-    <div style="font-size:12px;color:var(--text-muted);margin-bottom:20px;line-height:1.5;">Mit Klick auf "Senden" stimmen Sie zu, dass wir Ihnen einen einmaligen Link mit Ihrer Konfiguration zusenden. Es findet keine Newsletter-Anmeldung statt.</div>
-
-    <div class="modal-actions">
-
-      <button class="primary" id="save-send">Link per E-Mail senden</button>
-
-      <button class="secondary" id="save-cancel">Abbrechen</button>
-
-    </div>
-
-  </div>
-
-</div>
-
-
-
-<!-- MODAL: Erfolgsmeldung nach Save -->
-
-<div class="modal-backdrop hidden" id="save-success-modal">
-
-  <div class="modal">
-
-    <button class="modal-close" id="save-success-close">×</button>
-
-    <div class="modal-title">E-Mail wurde versendet</div>
-
-    <div class="modal-body">
-
-      Wir haben Ihre Konfiguration an <strong id="save-email-shown"></strong> gesendet. Prüfen Sie bitte auch Ihren Spam-Ordner, falls die Nachricht nicht innerhalb weniger Minuten ankommt.
-
-    </div>
-
-    <div class="modal-actions">
-
-      <button class="primary" id="save-success-ok">Weiter im Konfigurator</button>
-
-    </div>
-
-  </div>
-
-</div>
-
-
-
-<!-- HELP MODAL -->
-
-<div class="modal-backdrop hidden" id="help-modal">
-
-  <div class="modal help-modal-content">
-
-    <button class="modal-close" id="help-close">×</button>
-
-    <div class="modal-icon-badge">i</div>
-
-    <div id="help-content"></div>
-
-  </div>
-
-</div>
-
-
-
-<!-- MODAL: Rückwirkende wird entfernt -->
-
-<div class="modal-backdrop hidden" id="modal-rw-removal">
-
-  <div class="modal">
-
-    <div class="modal-title">Rückwirkende Absicherung wird entfernt</div>
-
-    <div class="modal-body">
-
-      Sie haben die Vermögensschadenhaftpflicht ausgesetzt. Damit fällt die Rückwirkende Absicherung aus Ihrem Paket, da sie auf diesem Baustein aufbaut.
-
-    </div>
-
-    <div class="modal-actions">
-
-      <button class="primary" id="modal-confirm">Verstanden, weiter</button>
-
-      <button class="secondary" id="modal-cancel">Zurück zur Auswahl</button>
-
-    </div>
-
-  </div>
-
-</div>
-
-<script>
-
-// ============ STATE ============
-
-const state = {
-
-  unlockedSteps: 1,
-
-  org: { legal: '', budget: null, members: null, orgtype: '' },
-
-  optional: { do: false, rs: false, rw: false },
-
-  startMode: 'sofort',
-
-  startDate: null,
-
-  deferOpen: false,
-
-  modules: {
-
-    hp: { mode: 'default', shiftDate: null },
-
-    vs: { mode: 'default', shiftDate: null },
-
-    do: { mode: 'default', shiftDate: null },
-
-    rs: { mode: 'default', shiftDate: null }
-
-  }
-
-};
-
-
-
-// ============ PREISTABELLEN ============
-
-const PRICE_BASE = {
-
-  20000:  { base: 299,  withDo: 428 },
-
-  100000: { base: 399,  withDo: 555 },
-
-  200000: { base: 741,  withDo: 741 },
-
-  300000: { base: 855,  withDo: 855 },
-
-  500000: { base: 1014, withDo: 1014 },
-
-  1000000:{ base: 1356, withDo: 1356 },
-
-  1500000:{ base: 1556, withDo: 1556 },
-
-  2000000:{ base: 1870, withDo: 1870 }
-
-};
-
-const PRICE_RS = { 250: 150, 500: 250, 1000: 450, 2000: 890 };
-
-const PRICE_RW = { 20000: 350, 100000: 550, 200000: 780, 300000: 900, 500000: 1100, 1000000: 1100, 1500000: 1300, 2000000: 1500 };
-
-
-
-function isDoAuto() {
-
-  return state.org.budget !== null && state.org.budget >= 200000;
-
-}
-
-function priceBase() {
-
-  if (!state.org.budget) return 0;
-
-  const e = PRICE_BASE[state.org.budget];
-
-  if (!e) return 0;
-
-  return e.base;
-
-}
-
-function priceDoSurcharge() {
-
-  if (!state.org.budget || isDoAuto()) return 0;
-
-  const e = PRICE_BASE[state.org.budget];
-
-  return e ? e.withDo - e.base : 0;
-
-}
-
-function priceRs() { return state.org.members ? (PRICE_RS[state.org.members] || 0) : 0; }
-
-function priceRw() { return state.org.budget ? (PRICE_RW[state.org.budget] || 0) : 0; }
-
-
-
-// ============ HELPER ============
-
-function fmt(d) {
-
-  if (!d) return '–';
-
-  const dt = (typeof d === 'string') ? new Date(d) : d;
-
-  if (isNaN(dt)) return '–';
-
-  return String(dt.getDate()).padStart(2,'0') + '.' + String(dt.getMonth()+1).padStart(2,'0') + '.' + dt.getFullYear();
-
-}
-
-function addMonths(d, m) {
-
-  const dt = new Date(d);
-
-  dt.setMonth(dt.getMonth() + m);
-
-  return dt.toISOString().split('T')[0];
-
-}
-
-function effectiveStartDate() {
-
-  if (state.startMode === 'sofort') return new Date().toISOString().split('T')[0];
-
-  return state.startDate;
-
-}
-
-
-
-const labels = {
-
-  legal: { ev: 'Eingetragener Verein (e.V.)', ggmbh: 'gemeinnützige GmbH', stiftung: 'Stiftung', sonst: 'Sonstige' },
-
-  budget: { 20000:'bis 20.000 €', 100000:'bis 100.000 €', 200000:'bis 200.000 €', 300000:'bis 300.000 €', 500000:'bis 500.000 €', 1000000:'bis 1.000.000 €', 1500000:'bis 1.500.000 €', 2000000:'bis 2.000.000 €' },
-
-  members: { 250:'bis 250 aktive Mitglieder', 500:'bis 500 aktive Mitglieder', 1000:'bis 1.000 aktive Mitglieder', 2000:'bis 2.000 aktive Mitglieder' },
-
-  orgtype: { sport:'Sport', kultur:'Kunst, Kultur, Musik', schule:'Schule und Kita', kirche:'Kirchlich/religiös', sozial:'Gesundheit und Soziales', heimat:'Heimatverein', umwelt:'Umwelt, Natur, Tierschutz', freizeit:'Freizeit, Geselligkeit', fluechtling:'Flüchtlingshilfe', rettung:'Rettungsdienst, Feuerwehr', bildung:'Jugendarbeit, Bildung', branche:'Branchenverband', unbekannt:'Nicht bekannt' }
-
-};
-
-
-
-// ============ STEP 1 ============
-
-function validateS1() {
-
-  const ok = state.org.legal && state.org.budget && state.org.members;
-
-  document.getElementById('btn-1').disabled = !ok;
-
-}
-
-['legal','budget','members','orgtype'].forEach(id => {
-
-  document.getElementById(id).addEventListener('change', e => {
-
-    let v = e.target.value;
-
-    if (id === 'budget' || id === 'members') v = v ? parseInt(v,10) : null;
-
-    state.org[id] = v;
-
-    validateS1();
-
-    if (state.unlockedSteps >= 2) renderS2();
-
-    if (state.unlockedSteps >= 3) renderS3();
-
-    if (state.unlockedSteps >= 4) renderS4();
-
-  });
-
-});
-
-
-
-document.getElementById('btn-1').addEventListener('click', () => {
-
-  state.unlockedSteps = Math.max(state.unlockedSteps, 2);
-
-  renderS2();
-
-  revealStep(2);
-
-});
-
-
-
-document.getElementById('edit-s1').addEventListener('click', () => scrollTo('step-1'));
-
-document.getElementById('edit-s2').addEventListener('click', () => scrollTo('step-2'));
-
-document.getElementById('ov-edit-1').addEventListener('click', () => scrollTo('step-1'));
-
-document.getElementById('ov-edit-2').addEventListener('click', () => scrollTo('step-2'));
-
-document.getElementById('ov-edit-3').addEventListener('click', () => scrollTo('step-3'));
-
-function scrollTo(id) { document.getElementById(id).scrollIntoView({ behavior: 'smooth', block: 'start' }); }
-
-
-
-// ============ STEP 2 ============
-
-document.querySelectorAll('.checkbox').forEach(c => {
-
-  c.addEventListener('click', () => {
-
-    if (c.closest('.disabled')) return;
-
-    const key = c.dataset.key;
-
-    state.optional[key] = !state.optional[key];
-
-    
-
-    if (key === 'rw' && state.optional.rw) {
-
-      state.modules.vs.mode = 'default';
-
-    }
-
-
-
-    renderS2();
-
-    if (state.unlockedSteps >= 3) renderS3();
-
-    if (state.unlockedSteps >= 4) renderS4();
-
-  });
-
-});
-
-
-
-function renderS2() {
-
-  const auto = isDoAuto();
-
-  document.getElementById('card-do-auto').classList.toggle('hidden', !auto);
-
-  document.getElementById('opt-do').style.display = auto ? 'none' : '';
-
-  if (auto) state.optional.do = false;
-
-
-
-  document.getElementById('do-price').innerHTML = priceDoSurcharge() > 0 ? `€ ${priceDoSurcharge()},– <span class="price-interval">/ Jahr</span>` : '€ – <span class="price-interval">/ Jahr</span>';
-
-  document.getElementById('rs-price').innerHTML = priceRs() > 0 ? `€ ${priceRs()},– <span class="price-interval">/ Jahr</span>` : '€ – <span class="price-interval">/ Jahr</span>';
-
-  document.getElementById('rw-price').innerHTML = priceRw() > 0 ? `€ ${priceRw()},– <span class="price-interval">/ einmalig</span>` : '€ – <span class="price-interval">/ einmalig</span>';
-
-
-
-  ['do','rs','rw'].forEach(k => {
-
-    const cb = document.querySelector(`.checkbox[data-key="${k}"]`);
-
-    if (!cb) return;
-
-    const card = cb.closest('.optional-card');
-
-    const lbl = document.querySelector(`[data-action-label="${k}"]`);
-
-    cb.classList.toggle('checked', state.optional[k]);
-
-    card.classList.toggle('active', state.optional[k]);
-
-    if (lbl) lbl.textContent = state.optional[k] ? 'Hinzugefügt' : 'Hinzufügen';
-
-  });
-
-
-
-  const heroBase = priceBase() + (state.optional.do && !auto ? priceDoSurcharge() : 0);
-
-  document.getElementById('hero-price').textContent = heroBase.toLocaleString('de-DE');
-
-
-
-  const tags = [];
-
-  if (state.org.legal) tags.push(labels.legal[state.org.legal]);
-
-  if (state.org.budget) tags.push(labels.budget[state.org.budget]);
-
-  if (state.org.members) tags.push(labels.members[state.org.members]);
-
-  if (state.org.orgtype) tags.push(labels.orgtype[state.org.orgtype]);
-
-  document.getElementById('recap-tags-s2').innerHTML = tags.map(t => `<span class="recap-tag">${t}</span>`).join('');
-
-
-
-  const rows = [];
-
-  const grund = priceBase();
-
-  rows.push(['Vereins-Schutzbrief', 'jährlich', grund + ' €']);
-
-  let jahres = grund;
-
-
-
-  if (!auto && state.optional.do) {
-
-    rows.push(['D&O-Versicherung (optional)', 'jährlich', priceDoSurcharge() + ' €']);
-
-    jahres += priceDoSurcharge();
-
-  }
-
-  if (state.optional.rs) { rows.push(['Rechtsschutz (optional)', 'jährlich', priceRs() + ' €']); jahres += priceRs(); }
-
-  if (state.optional.rw) { rows.push(['Rückwirkende Absicherung (optional)', 'einmalig', priceRw() + ' €']); }
-
-  rows.push(['Jahresbeitrag gesamt', '', jahres + ' €']);
-
-  if (state.optional.rw) rows.push(['Einmalig', '', priceRw() + ' €']);
-
-
-
-  document.getElementById('beitrag-rows').innerHTML = rows.map((r,i) => {
-
-    const isSum = r[0].startsWith('Jahresbeitrag') || r[0] === 'Einmalig';
-
-    return `<div class="beitrag-row${isSum?' summary':''}"><span>${r[0]}</span><span style="display:flex;gap:24px;"><span style="min-width:60px;text-align:right;color:var(--text-muted);">${r[1]}</span><span style="min-width:80px;text-align:right;">${r[2]}</span></span></div>`;
-
-  }).join('');
-
-}
-
-
-
-document.getElementById('btn-2-back').addEventListener('click', () => scrollTo('step-1'));
-
-document.getElementById('btn-2').addEventListener('click', () => {
-
-  state.unlockedSteps = Math.max(state.unlockedSteps, 3);
-
-  if (!state.startDate) state.startDate = new Date().toISOString().split('T')[0];
-
-  document.getElementById('start-date').value = state.startDate;
-
-  renderS3();
-
-  revealStep(3);
-
-});
-
-
-
-// ============ STEP 3 ============
-
-document.querySelectorAll('input[name="start"]').forEach(r => {
-
-  r.addEventListener('change', e => {
-
-    state.startMode = e.target.value;
-
-    document.getElementById('start-date-wrap').classList.toggle('hidden', state.startMode !== 'datum');
-
-    renderS3();
-
-  });
-
-});
-
-document.getElementById('start-date').addEventListener('change', e => {
-
-  state.startDate = e.target.value;
-
-  renderS3();
-
-});
-
-document.querySelectorAll('input[name="defer"]').forEach(r => {
-
-  r.addEventListener('change', e => {
-
-    state.deferOpen = (e.target.value === 'ja');
-
-    document.getElementById('modules').classList.toggle('hidden', !state.deferOpen);
-
-    renderS3();
-
-  });
-
-});
-
-['hp','vs','do','rs'].forEach(key => {
-
-  document.querySelectorAll(`input[name="${key}"]`).forEach(r => {
-
-    r.addEventListener('change', e => { state.modules[key].mode = e.target.value; renderS3(); });
-
-  });
-
-  const sd = document.querySelector(`[data-shift-date="${key}"]`);
-
-  if (sd) sd.addEventListener('change', e => { state.modules[key].shiftDate = e.target.value; renderS3(); });
-
-});
-
-
-
-function renderS3() {
-
-  const auto = isDoAuto();
-
-  const start = effectiveStartDate();
-
-  const hasDo = auto || state.optional.do;
-
-
-
-  document.getElementById('vs-title').innerHTML = hasDo
-
-    ? 'Vermögensschadenhaftpflicht- & D&O-Versicherung <span class="help-icon" data-help="vs">i</span>'
-
-    : 'Vermögensschadenhaftpflichtversicherung <span class="help-icon" data-help="vs">i</span>';
-
-
-
-  ['hp','vs','do','rs'].forEach(k => {
-
-    const el = document.getElementById(k + '-default-date');
-
-    if (el) el.textContent = fmt(start);
-
-  });
-
-  const vsDate = state.modules.vs.mode === 'verschieben' ? state.modules.vs.shiftDate : start;
-
-  document.getElementById('rw-date').textContent = fmt(vsDate);
-
-
-
-  ['hp','vs','do','rs'].forEach(k => {
-
-    const wrap = document.querySelector(`[data-shift="${k}"]`);
-
-    if (!wrap) return;
-
-    wrap.classList.toggle('hidden', state.modules[k].mode !== 'verschieben');
-
-    const inp = wrap.querySelector('input[type="date"]');
-
-    if (start) { inp.min = start; inp.max = addMonths(start, 12); }
-
-  });
-
-
-
-  const hpDev = state.modules.hp.mode !== 'default';
-
-  const vsDev = state.modules.vs.mode !== 'default';
-
-  document.querySelectorAll('input[name="hp"]').forEach(r => {
-
-    if (r.value !== 'default') {
-
-      r.disabled = vsDev;
-
-      r.parentElement.classList.toggle('disabled', vsDev);
-
-    }
-
-  });
-
-  document.querySelectorAll('input[name="vs"]').forEach(r => {
-
-    if (r.value !== 'default') {
-
-      r.disabled = hpDev;
-
-      r.parentElement.classList.toggle('disabled', hpDev);
-
-    }
-
-  });
-
-
-
-  const vsAussetzen = state.modules.vs.mode === 'aussetzen';
-
-  document.getElementById('vs-warn').classList.toggle('hidden', !(vsAussetzen && state.optional.rw));
-
-
-
-  const tags = ['Vereins-Schutzbrief'];
-
-  if (!auto && state.optional.do) tags.push('D&O');
-
-  if (state.optional.rs) tags.push('Rechtsschutz');
-
-  if (state.optional.rw) tags.push('Rückwirkende Absicherung');
-
-  document.getElementById('recap-tags-s3').innerHTML = tags.map(t => `<span class="recap-tag">${t}</span>`).join('');
-
-
-
-  document.getElementById('mod-rs').classList.toggle('hidden', !state.optional.rs);
-
-  document.getElementById('mod-do').classList.add('hidden');
-
-  document.getElementById('mod-rw').classList.toggle('hidden', !state.optional.rw);
-
-  document.getElementById('rw-info').style.display = vsAussetzen ? 'none' : '';
-
-  document.getElementById('rw-warn').classList.toggle('hidden', !vsAussetzen);
-
-
-
-  const zus = [];
-
-  zus.push(['Vereins-Schutzbrief', fmt(start)]);
-
-  if (state.modules.hp.mode === 'aussetzen') zus.push(['Haftpflicht & Veranstalter', '<span class="val warn">ausgesetzt</span>']);
-
-  else zus.push(['Haftpflicht & Veranstalter', fmt(state.modules.hp.mode === 'verschieben' ? state.modules.hp.shiftDate : start)]);
-
-  
-
-  const vsLbl = hasDo ? 'Vermögensschaden & D&O' : 'Vermögensschadenhaftpflicht';
-
-  if (vsAussetzen) zus.push([vsLbl, '<span class="val warn">ausgesetzt</span>']);
-
-  else zus.push([vsLbl, fmt(state.modules.vs.mode === 'verschieben' ? state.modules.vs.shiftDate : start)]);
-
-  
-
-  if (!auto && !state.optional.do) {
-
-    zus.push(['D&O-Versicherung', '<span class="val muted">nicht enthalten</span>']);
-
-  }
-
-  if (state.optional.rs) zus.push(['Rechtsschutz', fmt(state.modules.rs.mode === 'verschieben' ? state.modules.rs.shiftDate : start)]);
-
-  else zus.push(['Rechtsschutz', '<span class="val muted">nicht enthalten</span>']);
-
-  if (state.optional.rw) {
-
-    if (vsAussetzen) zus.push(['Rückwirkende Absicherung', '<span class="val warn">ausgesetzt</span>']);
-
-    else zus.push(['Rückwirkende Absicherung', fmt(vsDate)]);
-
-  } else zus.push(['Rückwirkende Absicherung', '<span class="val muted">nicht enthalten</span>']);
-
-
-
-  document.getElementById('zus-rows').innerHTML = zus.map(r => {
-
-    if (r[1].includes('<span')) return `<div class="zus-row"><span class="lbl">${r[0]}</span>${r[1]}</div>`;
-
-    return `<div class="zus-row"><span class="lbl">${r[0]}</span><span class="val">${r[1]}</span></div>`;
-
-  }).join('');
-
-}
-
-
-
-document.getElementById('btn-3-back').addEventListener('click', () => scrollTo('step-2'));
-
-document.getElementById('btn-3').addEventListener('click', () => {
-
-  if (state.modules.vs.mode === 'aussetzen' && state.optional.rw) {
-
-    openModal();
-
-    return;
-
-  }
-
-  proceedToStep4();
-
-});
-
-
-
-function proceedToStep4() {
-
-  state.unlockedSteps = Math.max(state.unlockedSteps, 4);
-
-  renderS4();
-
-  revealStep(4);
-
-}
-
-
-
-// ============ MODAL ============
-
-function openModal() { document.getElementById('modal-rw-removal').classList.remove('hidden'); }
-
-function closeModal() { document.getElementById('modal-rw-removal').classList.add('hidden'); }
-
-document.getElementById('modal-cancel').addEventListener('click', closeModal);
-
-document.getElementById('modal-confirm').addEventListener('click', () => {
-
-  state.optional.rw = false;
-
-  renderS2();
-
-  renderS3();
-
-  closeModal();
-
-  proceedToStep4();
-
-});
-
-document.getElementById('modal-rw-removal').addEventListener('click', e => {
-
-  if (e.target.id === 'modal-rw-removal') closeModal();
-
-});
-
-
-
-// ============ STEP 4 (ÜBERSICHT) ============
-
-function renderS4() {
-
-  const auto = isDoAuto();
-
-  const start = effectiveStartDate();
-
-  const vsAussetzen = state.modules.vs.mode === 'aussetzen';
-
-  const hasDo = auto || state.optional.do;
-
-
-
-  const org = [
-
-    ['Rechtsform', labels.legal[state.org.legal] || '–'],
-
-    ['Haushaltssumme', labels.budget[state.org.budget] || '–'],
-
-    ['Aktive Mitglieder', state.org.members ? ('bis ' + state.org.members) : '–'],
-
-    ['Organisationsform', labels.orgtype[state.org.orgtype] || '–']
-
-  ];
-
-  document.getElementById('ov-organisation').innerHTML = org.map(r => `<div class="ov-row"><span class="lbl">${r[0]}</span><span class="val">${r[1]}</span></div>`).join('');
-
-
-
-  let html = '<div class="paket-group-label">Inklusivleistungen</div>';
-
-  const inkl = [
-
-    ['Vereinshaftpflicht', 'enthalten'],
-
-    ['Veranstalterhaftpflicht', 'enthalten'],
-
-    ['Vermögensschadenhaftpflicht', vsAussetzen ? '<span class="tag-suspended">ausgesetzt</span>' : 'enthalten'],
-
-    ['Rechtsberatung', 'enthalten'],
-
-    ['Vorstandsberatung', 'enthalten']
-
-  ];
-
-  if (auto) inkl.splice(3, 0, ['D&O-Versicherung', vsAussetzen ? '<span class="tag-suspended">ausgesetzt</span>' : 'enthalten']);
-
-  html += inkl.map(r => `<div class="ov-row"><span class="lbl">${r[0]}</span><span class="val">${r[1]}</span></div>`).join('');
-
-
-
-  html += '<div class="paket-group-label">Optionale Bausteine</div>';
-
-  const opt = [];
-
-  if (!auto) opt.push(['D&O-Versicherung', state.optional.do ? 'enthalten' : '<span class="tag-not-included">nicht enthalten</span>']);
-
-  opt.push(['Rechtsschutz', state.optional.rs ? 'enthalten' : '<span class="tag-not-included">nicht enthalten</span>']);
-
-  opt.push(['Rückwirkende Absicherung', state.optional.rw && !vsAussetzen ? 'enthalten (einmalig)' : '<span class="tag-not-included">nicht enthalten</span>']);
-
-  html += opt.map(r => `<div class="ov-row"><span class="lbl">${r[0]}</span><span class="val">${r[1]}</span></div>`).join('');
-
-
-
-  document.getElementById('ov-paket').innerHTML = html;
-
-
-
-  const vsLbl = hasDo ? 'Vermögensschaden & D&O' : 'Vermögensschadenhaftpflicht';
-
-
-
-  const sz = [];
-
-  sz.push(['Vereins-Schutzbrief', fmt(start)]);
-
-  if (state.modules.hp.mode === 'aussetzen') sz.push(['Haftpflicht & Veranstalter', '<span class="val warn">ausgesetzt</span>']);
-
-  else sz.push(['Haftpflicht & Veranstalter', fmt(state.modules.hp.mode === 'verschieben' ? state.modules.hp.shiftDate : start)]);
-
-  if (vsAussetzen) sz.push([vsLbl, '<span class="val warn">ausgesetzt</span>']);
-
-  else sz.push([vsLbl, fmt(state.modules.vs.mode === 'verschieben' ? state.modules.vs.shiftDate : start)]);
-
-  if (!auto) {
-
-    if (state.optional.do) sz.push(['D&O-Versicherung', fmt(state.modules.vs.mode === 'verschieben' ? state.modules.vs.shiftDate : start)]);
-
-    else sz.push(['D&O-Versicherung', '<span class="val muted">nicht enthalten</span>']);
-
-  }
-
-  if (state.optional.rs) sz.push(['Rechtsschutz', fmt(state.modules.rs.mode === 'verschieben' ? state.modules.rs.shiftDate : start)]);
-
-  else sz.push(['Rechtsschutz', '<span class="val muted">nicht enthalten</span>']);
-
-  if (state.optional.rw && !vsAussetzen) sz.push(['Rückwirkende Absicherung', fmt(state.modules.vs.mode === 'verschieben' ? state.modules.vs.shiftDate : start)]);
-
-  else sz.push(['Rückwirkende Absicherung', '<span class="val muted">nicht enthalten</span>']);
-
-
-
-  document.getElementById('ov-startzeit').innerHTML = sz.map(r => {
-
-    if (r[1].includes('<span')) return `<div class="ov-row"><span class="lbl">${r[0]}</span>${r[1]}</div>`;
-
-    return `<div class="ov-row"><span class="lbl">${r[0]}</span><span class="val">${r[1]}</span></div>`;
-
-  }).join('');
-
-
-
-  const grund = priceBase();
-
-  const doFull = (!auto && state.optional.do) ? priceDoSurcharge() : 0;
-
-  const rsFull = state.optional.rs ? priceRs() : 0;
-
-  const rwP = (state.optional.rw && !vsAussetzen) ? priceRw() : 0;
-
-
-
-  function getProrataFactor(key, startDateStr) {
-
-    const mode = state.modules[key].mode;
-
-    if (mode === 'aussetzen') return 0;
-
-    if (mode === 'default') return 1;
-
-    if (mode === 'verschieben') {
-
-      const shiftDateStr = state.modules[key].shiftDate;
-
-      if (!shiftDateStr) return 1;
-
-      const dStart = new Date(startDateStr);
-
-      const dShift = new Date(shiftDateStr);
-
-      const dEnd = new Date(addMonths(startDateStr, 12));
-
-      const totalMs = dEnd - dStart;
-
-      const activeMs = dEnd - dShift;
-
-      if (totalMs <= 0 || activeMs <= 0) return 0;
-
-      return Math.max(0, Math.min(1, activeMs / totalMs));
-
-    }
-
-    return 1;
-
-  }
-
-
-
-  const hpFactor1 = getProrataFactor('hp', start);
-
-  const vsFactor1 = getProrataFactor('vs', start);
-
-  const rsFactor1 = getProrataFactor('rs', start);
-
-
-
-  const hpBase = Math.floor(grund * 0.5);
-
-  const vsBase = grund - hpBase;
-
-
-
-  const hpYr1 = state.modules.hp.mode === 'aussetzen' ? 0 : Math.round(hpBase * hpFactor1);
-
-  const vsYr1 = state.modules.vs.mode === 'aussetzen' ? 0 : Math.round(vsBase * vsFactor1);
-
-  const doYr1 = Math.round(doFull * vsFactor1); 
-
-  const rsYr1 = Math.round(rsFull * rsFactor1);
-
-
-
-  const hpYr2 = state.modules.hp.mode === 'aussetzen' ? 0 : hpBase;
-
-  const vsYr2 = state.modules.vs.mode === 'aussetzen' ? 0 : vsBase;
-
-  const doYr2 = state.modules.vs.mode === 'aussetzen' ? 0 : doFull;
-
-  const rsYr2 = state.modules.rs.mode === 'aussetzen' ? 0 : rsFull;
-
-
-
-  const totalYr1 = hpYr1 + vsYr1 + doYr1 + rsYr1;
-
-  const totalYr2 = hpYr2 + vsYr2 + doYr2 + rsYr2;
-
-
-
-  let k = '';
-
-
-
-  if (totalYr1 === totalYr2 && rwP === 0) {
-
-    k += '<div class="cost-section"><div class="cost-section-title">Jährlicher Beitrag</div>';
-
-    k += `<div class="ov-cost-row"><span>Vereins-Schutzbrief</span><span>${grund} €</span></div>`;
-
-    if (doYr2) k += `<div class="ov-cost-row"><span>D&O-Versicherung</span><span>${doYr2} €</span></div>`;
-
-    if (rsYr2) k += `<div class="ov-cost-row"><span>Rechtsschutz</span><span>${rsYr2} €</span></div>`;
-
-    k += `<div class="ov-cost-row subtotal"><span>Gesamtbeitrag</span><span>${totalYr2} € / Jahr</span></div></div>`;
-
-  } else {
-
-    k += '<div class="cost-section">';
-
-    k += `<div class="ov-cost-row" style="font-weight: 700; color: var(--brand-green); border-bottom: 1px solid var(--border-soft); padding-bottom: 8px; margin-bottom: 12px;">
-
-            <span style="flex: 2;">Gewählte Bausteine</span>
-
-            <span style="flex: 1; text-align: right;">1. Jahr</span>
-
-            <span style="flex: 1; text-align: right;">Ab 2. Jahr</span>
-
-          </div>`;
-
-
-
-    k += `<div style="font-size: var(--font-size-xs); font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-top: 12px; margin-bottom: 6px; border-bottom: 1px dashed var(--border-soft); padding-bottom: 4px;">Vereins-Schutzbrief (Basis-Paket)</div>`;
-
-
-
-    let hpTxt1 = '';
-
-    if (state.modules.hp.mode === 'aussetzen') hpTxt1 = '<span style="color:var(--warn-orange);">ausgesetzt</span>';
-
-    else if (state.modules.hp.mode === 'verschieben') hpTxt1 = `${hpYr1} € <span style="font-size:11px; color:var(--text-muted); font-weight:400;">(anteilig)</span>`;
-
-    else hpTxt1 = `${hpYr1} €`;
-
-    const hpTxt2 = hpYr2 > 0 ? `${hpYr2} €` : '<span style="color:var(--warn-orange);">ausgesetzt</span>';
-
-    k += `<div class="ov-cost-row" style="padding-left: 8px;"><span style="flex: 2;">Haftpflicht & Veranstalter</span><span style="flex: 1; text-align: right;">${hpTxt1}</span><span style="flex: 1; text-align: right;">${hpTxt2}</span></div>`;
-
-
-
-    let vsTxt1 = '';
-
-    if (state.modules.vs.mode === 'aussetzen') vsTxt1 = '<span style="color:var(--warn-orange);">ausgesetzt</span>';
-
-    else if (state.modules.vs.mode === 'verschieben') vsTxt1 = `${vsYr1 + doYr1} € <span style="font-size:11px; color:var(--text-muted); font-weight:400;">(anteilig)</span>`;
-
-    else vsTxt1 = `${vsYr1 + doYr1} €`;
-
-    const vsTxt2 = (vsYr2 + doYr2) > 0 ? `${vsYr2 + doYr2} €` : '<span style="color:var(--warn-orange);">ausgesetzt</span>';
-
-    k += `<div class="ov-cost-row" style="padding-left: 8px;"><span style="flex: 2;">${vsLbl}</span><span style="flex: 1; text-align: right;">${vsTxt1}</span><span style="flex: 1; text-align: right;">${vsTxt2}</span></div>`;
-
-
-
-    if (rsFull > 0) {
-
-      k += `<div style="font-size: var(--font-size-xs); font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-top: 20px; margin-bottom: 6px; border-bottom: 1px dashed var(--border-soft); padding-bottom: 4px;">Optionale Ergänzungen</div>`;
-
-      
-
-      let rsTxt1 = '';
-
-      if (state.modules.rs.mode === 'verschieben') rsTxt1 = `${rsYr1} € <span style="font-size:11px; color:var(--text-muted); font-weight:400;">(anteilig)</span>`;
-
-      else rsTxt1 = `${rsYr1} €`;
-
-      k += `<div class="ov-cost-row" style="padding-left: 8px;"><span style="flex: 2;">Rechtsschutz</span><span style="flex: 1; text-align: right;">${rsTxt1}</span><span style="flex: 1; text-align: right;">${rsYr2} €</span></div>`;
-
-    }
-
-
-
-    k += `<div class="ov-cost-row subtotal" style="margin-top: 16px; padding-top: 8px; border-top: 1px solid var(--border-soft);">
-
-            <span style="flex: 2; font-weight: 700;">Laufender Beitrag (Gesamt)</span>
-
-            <span style="flex: 1; text-align: right; font-weight: 700;">${totalYr1} €</span>
-
-            <span style="flex: 1; text-align: right; font-weight: 700;">${totalYr2} €</span>
-
-          </div>`;
-
-    k += '</div>';
-
-
-
-    if (rwP) {
-
-      k += `<div class="cost-section" style="margin-top: 24px; border-top: 1px dashed var(--border-soft); padding-top: 16px;">
-
-              <div class="cost-section-title">Einmalige Kosten</div>
-
-              <div class="ov-cost-row">
-
-                <span>Rückwirkende Absicherung</span>
-
-                <span style="font-weight: 700; font-size: var(--font-size-md); color: var(--text-primary);">${rwP} €</span>
-
-              </div>
-
-            </div>`;
-
-    }
-
-  }
-
-
-
-  document.getElementById('ov-kosten').innerHTML = k;
-
-}
-
-
-
-document.getElementById('btn-4-back').addEventListener('click', () => scrollTo('step-3'));
-
-document.getElementById('btn-4-save').addEventListener('click', () => {
-
-  document.getElementById('save-email').value = '';
-
-  document.getElementById('save-modal').classList.remove('hidden');
-
-});
-
-function closeSaveModal() { document.getElementById('save-modal').classList.add('hidden'); }
-
-document.getElementById('save-close').addEventListener('click', closeSaveModal);
-
-document.getElementById('save-cancel').addEventListener('click', closeSaveModal);
-
-document.getElementById('save-modal').addEventListener('click', e => { if (e.target.id === 'save-modal') closeSaveModal(); });
-
-document.getElementById('save-send').addEventListener('click', () => {
-
-  const email = document.getElementById('save-email').value.trim();
-
-  if (!email || !email.includes('@')) {
-
-    alert('Bitte eine gültige E-Mail-Adresse eingeben.');
-
-    return;
-
-  }
-
-  closeSaveModal();
-
-  document.getElementById('save-email-shown').textContent = email;
-
-  document.getElementById('save-success-modal').classList.remove('hidden');
-
-});
-
-function closeSaveSuccess() { document.getElementById('save-success-modal').classList.add('hidden'); }
-
-document.getElementById('save-success-close').addEventListener('click', closeSaveSuccess);
-
-document.getElementById('save-success-ok').addEventListener('click', closeSaveSuccess);
-
-document.getElementById('save-success-modal').addEventListener('click', e => { if (e.target.id === 'save-success-modal') closeSaveSuccess(); });
-
-
-
-document.getElementById('btn-4').addEventListener('click', () => alert('Demo: hier ginge es weiter zu den Antragsdaten.'));
-
-
-
-// ============ STEP REVEAL ============
-
-function revealStep(n) {
-
-  const el = document.getElementById('step-' + n);
-
-  el.classList.remove('hidden-step');
-
-  requestAnimationFrame(() => {
-
-    el.classList.add('visible');
-
-    setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
-
-  });
-
-}
-
-
-
-// ============ HELP MODALS ============
-
-const helpModals = {
-
-  legal: { title: 'Rechtsform Ihres Vereins', intro: 'Die rechtliche Organisationsform Ihrer Einrichtung bestimmt teils den Versicherungsumfang. Wählen Sie die Form, unter der Ihr Verein eingetragen ist.' },
-
-  budget: {
-
-    title: 'Haushaltssumme',
-
-    intro: 'Die Summe aller jährlichen Einnahmen Ihres Vereins (Mitgliedsbeiträge, Spenden, Förderungen, Veranstaltungseinnahmen).',
-
-    sections: [
-
-      { head: 'Warum ist das wichtig?', items: ['Bestimmt den Beitrag für den Vereins-Schutzbrief', 'Ab 200.000 € ist die D&O-Versicherung automatisch enthalten', 'Beeinflusst die Höhe der einmaligen Rückwirkenden Absicherung'] }
-
-    ]
-
-  },
-
-  members: { title: 'Aktive Mitglieder', intro: 'Die Anzahl der Personen, die aktiv im Verein mitwirken. Beeinflusst den Beitrag für die optionale Rechtsschutzversicherung.' },
-
-  orgtype: { title: 'Organisationsform', intro: 'Die thematische Ausrichtung Ihres Vereins. Hilft uns, den Schutz besser auf Ihre Bedürfnisse abzustimmen. Optionale Angabe.' },
-
-  vereinshaftpflicht: {
-
-    title: 'Vereinshaftpflicht',
-
-    intro: 'Die Vereinshaftpflicht ist das absolute Muss für jeden Verein – vergleichbar mit der Betriebshaftpflicht bei Unternehmen.',
-
-    sections: [
-
-      { head: 'Was ist abgedeckt?', items: ['Personen- und Sachschäden, die der Verein oder seine Mitglieder Dritten zufügen', 'Daraus folgende Vermögensschäden', 'Prüfung von Haftungsfragen und Abwehr unbereichter Ansprüche'] },
-
-      { head: 'Deckung', items: ['15 Mio. € pro Schadensfall, 30 Mio. € pro Jahr. Selbstbeteiligung 250 €.', 'Versicherer: Allianz.'] }
-
-    ]
-
-  },
-
-  veranstalterhaftpflicht: {
-
-    title: 'Veranstalterhaftpflicht',
-
-    intro: 'Zusätzlicher Schutz für Vereinsveranstaltungen wie Feste, Turniere oder Ausflüge.',
-
-    sections: [{ head: 'Beispiele', items: ['Vereinsfest mit externen Besuchern', 'Sportveranstaltungen', 'Ausflüge mit Vereinsmitgliedern'] }]
-
-  },
-
-  vermoegen: {
-
-    title: 'Vermögensschadenhaftpflicht',
-
-    intro: 'Sichert finanzielle Schäden ab, die durch Fehler oder Versäumnisse im Vereinsbetrieb entstehen.',
-
-    sections: [{ head: 'Deckung', items: ['1 Mio. € pro Schadensfall', 'Beratungsfehler, fehlerhafte Vereinsführung, formale Versäumnisse'] }]
-
-  },
-
-  do: {
-
-    title: 'D&O-Versicherung (Vorstandshaftpflicht)',
-
-    intro: 'Schützt Vorstände persönlich vor Haftungsansprüchen aus ihrer ehrenamtlichen Tätigkeit.',
-
-    sections: [
-
-      { head: 'Wer ist versichert?', items: ['Aktive Vorstände', 'Ehemalige Vorstände für Pflichtverletzungen während der Amtszeit'] },
-
-      { head: 'Deckung', items: ['1 Mio. € pro Schadensfall', 'Ab Haushaltssumme 200.000 € automatisch im Beitrag enthalten'] }
-
-    ]
-
-  },
-
-  rechtsberatung: { title: 'Rechtsberatung', intro: 'Anwaltliche Beratung zu Vereins- und Steuerrecht durch Fachanwälte. Hilft bei der Prüfung wichtiger Verträge und Satzungsfragen.' },
-
-  vorstandsberatung: { title: 'Vorstandsberatung', intro: 'Praxisnahe Unterstützung bei Organisations- und Finanzfragen im Vereinsalltag.' },
-
-  rs: {
-
-    title: 'Rechtsschutzversicherung',
-
-    intro: 'Übernimmt Kosten für anwaltliche und gerichtliche Auseinandersetzungen.',
-
-    sections: [
-
-      { head: 'Was ist abgedeckt?', items: ['Anwalts- und Gerichtskosten', 'Inkl. Rechtsberatung PLUS (Antwort in 3 Werktagen)', 'Deckungssumme bis 2 Mio €'] },
-
-      { head: 'Hinweis', items: ['Nur in Kombination mit dem Vereins-Schutzbrief buchbar.'] }
-
-    ]
-
-  },
-
-  rw: {
-
-    title: 'Rückwirkende Absicherung',
-
-    intro: 'Deckt Vermögensschäden aus der Vergangenheit ab – bis zu 3 Jahre rückwirkend. Besonders wertvoll, wenn Sie ein Ehrenamt neu übernehmen.',
-
-    sections: [{ head: 'Wichtig', items: ['Startet zwingend zusammen mit der Vermögensschadenhaftpflicht', 'Einmalige Zahlung, kein laufender Beitrag', 'Nicht möglich, wenn die Vermögensschadenhaftpflicht ausgesetzt wird'] }]
-
-  },
-
-  start: { title: 'Startdatum Ihres Vereins-Schutzbriefs', intro: 'Das Datum, an dem Ihr Schutz beginnen soll. Bei "Ab sofort" startet der Schutz mit Vertragsabschluss.' },
-
-  defer: {
-
-    title: 'Bausteine verschieben oder aussetzen',
-
-    intro: 'Falls Sie für einen einzelnen Baustein bereits eine bestehende Versicherung haben, können Sie diesen Baustein verschieben oder permanent aussetzen.',
-
-    sections: [{ head: 'Wichtig', items: ['Nur einer der beiden Pflichtbausteine (Haftpflicht ODER Vermögensschaden) kann verschoben oder ausgesetzt werden', 'Mindestens einer muss zwingend mit dem Vereins-Schutzbrief starten'] }]
-
-  },
-
-  hp: { title: 'Haftpflicht & Veranstalterhaftpflicht', intro: 'Pflichtbaustein: Haftpflicht-Schutz für den Verein und seine Veranstaltungen. Dieser Baustein deckt sowohl den laufenden Vereinsbetrieb als auch einzelne Veranstaltungen ab.' },
-
-  vs: { title: 'Vermögensschadenhaftpflicht', intro: 'Pflichtbaustein: Schutz vor finanziellen Schäden durch Fehler im Vereinsbetrieb. Bei Haushaltssumme ab 200.000 € automatisch inklusive D&O-Versicherung.' },
-
-  aussetzen: {
-
-    title: 'Baustein permanent aussetzen',
-
-    intro: 'Wenn Sie bereits eine bestehende Versicherung für einen Pflichtbaustein haben, können Sie diesen permanent aussetzen.',
-
-    sections: [{ head: 'Bitte beachten', items: ['Nur einer der beiden Pflichtbausteine kann ausgesetzt werden', 'Der andere muss zwingend mit dem Vereins-Schutzbrief starten', 'Wenn Sie die Vermögensschadenhaftpflicht aussetzen, kann die Rückwirkende Absicherung nicht in Anspruch genommen werden'] }]
-
-  }
-
-};
-
-
-
-function openHelpModal(key) {
-
-  const data = helpModals[key];
-
-  if (!data) return;
-
-  let html = `<h2>${data.title}</h2>`;
-
-  if (data.intro) html += `<p>${data.intro}</p>`;
-
-  if (data.sections) {
-
-    data.sections.forEach(s => {
-
-      html += `<h3>${s.head}</h3><ul>${s.items.map(i => `<li>${i}</li>`).join('')}</ul>`;
-
-    });
-
-  }
-
-  document.getElementById('help-content').innerHTML = html;
-
-  document.getElementById('help-modal').classList.remove('hidden');
-
-}
-
-
-
-function closeHelpModal() { document.getElementById('help-modal').classList.add('hidden'); }
-
-document.getElementById('help-close').addEventListener('click', closeHelpModal);
-
-document.getElementById('help-modal').addEventListener('click', e => {
-
-  if (e.target.id === 'help-modal') closeHelpModal();
-
-});
-
-
-
-// BUGFIX: Klick-Delegation über .closest() fängt Klicks auf Icons jetzt auf jedem Endgerät ab
-
-document.addEventListener('click', e => {
-
-  const helpBtn = e.target.closest('.help-icon');
-
-  if (helpBtn) {
-
-    e.stopPropagation();
-
-    openHelpModal(helpBtn.dataset.help);
-
-  }
-
-});
-
-
-
-// Initialer Validierungs-Render
-
-validateS1();</script>
-
+  <script src="script.js"></script>
 </body>
-
 </html>
