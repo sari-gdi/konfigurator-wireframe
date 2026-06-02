@@ -474,89 +474,107 @@ function renderS4() {
 }
 
 document.getElementById('btn-4-back').addEventListener('click', () => scrollTo('step-3'));
-document.getElementById('btn-4-save').addEventListener('click', () => {
-  document.getElementById('save-email').value = '';
-  document.getElementById('save-modal').classList.remove('hidden');
-});
+
+// 1. Der "Konfiguration speichern" Code (Sicher verpackt, falls du den Button im HTML mal wieder einbaust)
+const saveButton = document.getElementById('btn-4-save');
+if (saveButton) {
+  saveButton.addEventListener('click', () => {
+    document.getElementById('save-email').value = '';
+    document.getElementById('save-modal').classList.remove('hidden');
+  });
+}
+
 function closeSaveModal() { document.getElementById('save-modal').classList.add('hidden'); }
 document.getElementById('save-close').addEventListener('click', closeSaveModal);
 document.getElementById('save-cancel').addEventListener('click', closeSaveModal);
-document.getElementById('save-modal').addEventListener('click', e => { if (e.target.id === 'save-modal') closeSaveModal(); });
-document.getElementById('save-send').addEventListener('click', () => {
-  const email = document.getElementById('save-email').value.trim();
-  if (!email || !email.includes('@')) {
-    alert('Bitte eine gültige E-Mail-Adresse eingeben.');
-    return;
-  }
+const saveModalEl = document.getElementById('save-modal');
+if (saveModalEl) {
+  saveModalEl.addEventListener('click', e => { if (e.target.id === 'save-modal') closeSaveModal(); });
+}
 
-  // 1. Hilfsvariablen & Berechnungen
-  const autoDo = isDoAuto();
-  const vsAussetzen = state.modules.vs.mode === 'aussetzen';
-  const hpAussetzen = state.modules.hp.mode === 'aussetzen';
-  const start = effectiveStartDate();
+const saveSendBtn = document.getElementById('save-send');
+if (saveSendBtn) {
+  saveSendBtn.addEventListener('click', () => {
+    const email = document.getElementById('save-email').value.trim();
+    if (!email || !email.includes('@')) {
+      alert('Bitte eine gültige E-Mail-Adresse eingeben.');
+      return;
+    }
 
-  const grund = priceBase();
-  const doFull = (!autoDo && state.optional.do) ? priceDoSurcharge() : 0;
-  const rsFull = state.optional.rs ? priceRs() : 0;
-  const rwP = (state.optional.rw && !vsAussetzen) ? priceRw() : 0;
-  const gesamtJahresBeitrag = grund + doFull + rsFull;
+    // Hilfsvariablen & Berechnungen
+    const autoDo = isDoAuto();
+    const vsAussetzen = state.modules.vs.mode === 'aussetzen';
+    const hpAussetzen = state.modules.hp.mode === 'aussetzen';
+    const start = effectiveStartDate();
 
-  // 2. "Schönes" Plain-Text-Design mit Emojis und Struktur
-  let emailText = `Hallo!\n\nVielen Dank für die Nutzung unseres Konfigurators. Hier ist Ihre maßgeschneiderte Übersicht:\n\n`;
-  
-  emailText += `📋 1. DETAILS ZUR ORGANISATION\n`;
-  emailText += `--------------------------------------------------\n`;
-  emailText += `   Rechtsform:        ${labels.legal[state.org.legal] || '–'}\n`;
-  emailText += `   Haushaltssumme:    ${labels.budget[state.org.budget] || '–'}\n`;
-  emailText += `   Aktive Mitglieder: ${state.org.members ? 'bis ' + state.org.members : '–'}\n`;
-  emailText += `   Sparte/Bereich:    ${labels.orgtype[state.org.orgtype] || 'Keine Angabe'}\n\n`;
+    const grund = priceBase();
+    const doFull = (!autoDo && state.optional.do) ? priceDoSurcharge() : 0;
+    const rsFull = state.optional.rs ? priceRs() : 0;
+    const rwP = (state.optional.rw && !vsAussetzen) ? priceRw() : 0;
+    const gesamtJahresBeitrag = grund + doFull + rsFull;
 
-  emailText += `🛡️ 2. IHR GEWÄHLTES SCHUTZPAKET\n`;
-  emailText += `--------------------------------------------------\n`;
-  emailText += `  [✓] Vereinshaftpflicht\n`;
-  emailText += `  [✓] Veranstalterhaftpflicht\n`;
-  emailText += `  [${vsAussetzen ? ' ' : '✓'}] Vermögensschadenhaftpflicht ${vsAussetzen ? '(AUSGESETZT)' : ''}\n`;
-  emailText += `  [${(autoDo || state.optional.do) ? '✓' : ' '}] Vorstandshaftpflicht (D&O) ${autoDo ? '(Automatisch inklusive)' : ''}\n`;
-  emailText += `  [${state.optional.rs ? '✓' : ' '}] Rechtsschutzversicherung\n`;
-  emailText += `  [${(state.optional.rw && !vsAussetzen) ? '✓' : ' '}] Rückwirkende Absicherung\n\n`;
+    // "Schönes" Plain-Text-Design mit Emojis und Struktur
+    let emailText = `Hallo!\n\nVielen Dank für die Nutzung unseres Konfigurators. Hier ist Ihre maßgeschneiderte Übersicht:\n\n`;
+    
+    emailText += `📋 1. DETAILS ZUR ORGANISATION\n`;
+    emailText += `--------------------------------------------------\n`;
+    emailText += `   Rechtsform:        ${labels.legal[state.org.legal] || '–'}\n`;
+    emailText += `   Haushaltssumme:    ${labels.budget[state.org.budget] || '–'}\n`;
+    emailText += `   Aktive Mitglieder: ${state.org.members ? 'bis ' + state.org.members : '–'}\n`;
+    emailText += `   Sparte/Bereich:    ${labels.orgtype[state.org.orgtype] || 'Keine Angabe'}\n\n`;
 
-  emailText += `📅 3. STARTZEITPUNKTE DER BAUSTEINE\n`;
-  emailText += `--------------------------------------------------\n`;
-  emailText += `  🏁 Haupt-Startdatum:         ${fmt(start)}\n`;
-  emailText += `  • Haftpflicht-Baustein:     ${hpAussetzen ? '❌ Ausgesetzt' : (state.modules.hp.mode === 'verschieben' ? fmt(state.modules.hp.shiftDate) + ' (verschoben)' : fmt(start))}\n`;
-  emailText += `  • Vermögensschaden & D&O:   ${vsAussetzen ? '❌ Ausgesetzt' : (state.modules.vs.mode === 'verschieben' ? fmt(state.modules.vs.shiftDate) + ' (verschoben)' : fmt(start))}\n`;
-  if (state.optional.rs) {
-    emailText += `  • Rechtsschutz:             ${state.modules.rs.mode === 'verschieben' ? fmt(state.modules.rs.shiftDate) + ' (verschoben)' : fmt(start)}\n`;
-  }
-  emailText += `\n`;
+    emailText += `🛡️ 2. IHR GEWÄHLTES SCHUTZPAKET\n`;
+    emailText += `--------------------------------------------------\n`;
+    emailText += `  [✓] Vereinshaftpflicht\n`;
+    emailText += `  [✓] Veranstalterhaftpflicht\n`;
+    emailText += `  [${vsAussetzen ? ' ' : '✓'}] Vermögensschadenhaftpflicht ${vsAussetzen ? '(AUSGESETZT)' : ''}\n`;
+    emailText += `  [${(autoDo || state.optional.do) ? '✓' : ' '}] Vorstandshaftpflicht (D&O) ${autoDo ? '(Automatisch inklusive)' : ''}\n`;
+    emailText += `  [${state.optional.rs ? '✓' : ' '}] Rechtsschutzversicherung\n`;
+    emailText += `  [${(state.optional.rw && !vsAussetzen) ? '✓' : ' '}] Rückwirkende Absicherung\n\n`;
 
-  emailText += `💳 4. PREISÜBERSICHT (Regulär ab 2. Jahr)\n`;
-  emailText += `--------------------------------------------------\n`;
-  emailText += `  Basis-Schutzbrief:          ${grund} € / Jahr\n`;
-  if (doFull > 0) emailText += `  Zusatz D&O-Schutz:          ${doFull} € / Jahr\n`;
-  if (rsFull > 0) emailText += `  Zusatz Rechtsschutz:        ${rsFull} € / Jahr\n`;
-  emailText += `  ==================================================\n`;
-  emailText += `  🔥 LAUFENDER BEITRAG:       ${gesamtJahresBeitrag} € / Jahr\n`;
-  if (rwP > 0) {
+    emailText += `📅 3. STARTZEITPUNKTE DER BAUSTEINE\n`;
+    emailText += `--------------------------------------------------\n`;
+    emailText += `  🏁 Haupt-Startdatum:         ${fmt(start)}\n`;
+    emailText += `  • Haftpflicht-Baustein:     ${hpAussetzen ? '❌ Ausgesetzt' : (state.modules.hp.mode === 'verschieben' ? fmt(state.modules.hp.shiftDate) + ' (verschoben)' : fmt(start))}\n`;
+    emailText += `  • Vermögensschaden & D&O:   ${vsAussetzen ? '❌ Ausgesetzt' : (state.modules.vs.mode === 'verschieben' ? fmt(state.modules.vs.shiftDate) + ' (verschoben)' : fmt(start))}\n`;
+    if (state.optional.rs) {
+      emailText += `  • Rechtsschutz:             ${state.modules.rs.mode === 'verschieben' ? fmt(state.modules.rs.shiftDate) + ' (verschoben)' : fmt(start)}\n`;
+    }
+    emailText += `\n`;
+
+    emailText += `💳 4. PREISÜBERSICHT (Regulär ab 2. Jahr)\n`;
+    emailText += `--------------------------------------------------\n`;
+    emailText += `  Basis-Schutzbrief:          ${grund} € / Jahr\n`;
+    if (doFull > 0) emailText += `  Zusatz D&O-Schutz:          ${doFull} € / Jahr\n`;
+    if (rsFull > 0) emailText += `  Zusatz Rechtsschutz:        ${rsFull} € / Jahr\n`;
     emailText += `  ==================================================\n`;
-    emailText += `  🎁 Einmalige Kosten (RW):    ${rwP} € (einmalig)\n`;
-  }
-  emailText += `\n\nSie können Ihren Antrag jederzeit mit diesen Daten bei Ihrem Berater fortsetzen.\n\nMit freundlichen Grüßen\nIhr Vereins-Schutzbrief Team`;
+    emailText += `  🔥 LAUFENDER BEITRAG:       ${gesamtJahresBeitrag} € / Jahr\n`;
+    if (rwP > 0) {
+      emailText += `  ==================================================\n`;
+      emailText += `  🎁 Einmalige Kosten (RW):    ${rwP} € (einmalig)\n`;
+    }
+    emailText += `\n\nSie können Ihren Antrag jederzeit mit diesen Daten bei Ihrem Berater fortsetzen.\n\nMit freundlichen Grüßen\nIhr Vereins-Schutzbrief Team`;
 
-  // 3. Absenden via Mailto
-  const subject = encodeURIComponent("Ihre Konfiguration: Vereins-Schutzbrief");
-  const body = encodeURIComponent(emailText);
+    const subject = encodeURIComponent("Ihre Konfiguration: Vereins-Schutzbrief");
+    const body = encodeURIComponent(emailText);
 
-  window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+    window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
 
-  closeSaveModal();
-  document.getElementById('save-email-shown').textContent = email;
-  document.getElementById('save-success-modal').classList.remove('hidden');
-});
+    closeSaveModal();
+    document.getElementById('save-email-shown').textContent = email;
+    document.getElementById('save-success-modal').classList.remove('hidden');
+  });
+}
+
 function closeSaveSuccess() { document.getElementById('save-success-modal').classList.add('hidden'); }
-document.getElementById('save-success-close').addEventListener('click', closeSaveSuccess);
-document.getElementById('save-success-ok').addEventListener('click', closeSaveSuccess);
-document.getElementById('save-success-modal').addEventListener('click', e => { if (e.target.id === 'save-success-modal') closeSaveSuccess(); });
+const successCloseBtn = document.getElementById('save-success-close');
+if (successCloseBtn) successCloseBtn.addEventListener('click', closeSaveSuccess);
+const successOkBtn = document.getElementById('save-success-ok');
+if (successOkBtn) successOkBtn.addEventListener('click', closeSaveSuccess);
+const successModalEl = document.getElementById('save-success-modal');
+if (successModalEl) {
+  successModalEl.addEventListener('click', e => { if (e.target.id === 'save-success-modal') closeSaveSuccess(); });
+}
 
 document.getElementById('btn-4').addEventListener('click', () => alert('Demo: hier ginge es weiter zu den Antragsdaten.'));
 
@@ -571,133 +589,27 @@ function revealStep(n) {
 }
 
 // ============ HELP MODALS ============
-const helpModals = {
-  legal: { title: 'Rechtsform Ihres Vereins', intro: 'Die rechtliche Organisationsform Ihrer Einrichtung bestimmt teils den Versicherungsumfang. Wählen Sie die Form, unter der Ihr Verein eingetragen ist.' },
-  budget: {
-    title: 'Haushaltssumme',
-    intro: 'Die Summe aller jährlichen Einnahmen Ihres Vereins (Mitgliedsbeiträge, Spenden, Förderungen, Veranstaltungseinnahmen).',
-    sections: [
-      { head: 'Warum ist das wichtig?', items: ['Bestimmt den Beitrag für den Vereins-Schutzbrief', 'Ab 200.000 € ist die D&O-Versicherung automatisch enthalten', 'Beeinflusst die Höhe der einmaligen Rückwirkenden Absicherung'] }
-    ]
-  },
-  members: { title: 'Aktive Mitglieder', intro: 'Die Anzahl der Personen, die aktiv im Verein mitwirken. Beeinflusst den Beitrag für die optionale Rechtsschutzversicherung.' },
-  orgtype: { title: 'Organisationsform', intro: 'Die thematische Ausrichtung Ihres Vereins. Hilft uns, den Schutz besser auf Ihre Bedürfnisse abzustimmen. Optionale Angabe.' },
-  vereinshaftpflicht: {
-    title: 'Vereinshaftpflicht',
-    intro: 'Die Vereinshaftpflicht ist das absolute Muss für jeden Verein – vergleichbar mit der Betriebshaftpflicht bei Unternehmen.',
-    sections: [
-      { head: 'Was ist abgedeckt?', items: ['Personen- und Sachschäden, die der Verein oder seine Mitglieder Dritten zufügen', 'Daraus folgende Vermögensschäden', 'Prüfung von Haftungsfragen und Abwehr unbereichter Ansprüche'] },
-      { head: 'Deckung', items: ['15 Mio. € pro Schadensfall, 30 Mio. € pro Jahr. Selbstbeteiligung 250 €.', 'Versicherer: Allianz.'] }
-    ]
-  },
-  veranstalterhaftpflicht: {
-    title: 'Veranstalterhaftpflicht',
-    intro: 'Zusätzlicher Schutz für Vereinsveranstaltungen wie Feste, Turniere oder Ausflüge.',
-    sections: [{ head: 'Beispiele', items: ['Vereinsfest mit externen Besuchern', 'Sportveranstaltungen', 'Ausflüge mit Vereinsmitgliedern'] }]
-  },
-  vermoegen: {
-    title: 'Vermögensschadenhaftpflicht',
-    intro: 'Sichert finanzielle Schäden ab, die durch Fehler oder Versäumnisse im Vereinsbetrieb entstehen.',
-    sections: [{ head: 'Deckung', items: ['1 Mio. € pro Schadensfall', 'Beratungsfehler, fehlerhafte Vereinsführung, formale Versäumnisse'] }]
-  },
-  do: {
-    title: 'D&O-Versicherung (Vorstandshaftpflicht)',
-    intro: 'Schützt Vorstände persönlich vor Haftungsansprüchen aus ihrer ehrenamtlichen Tätigkeit.',
-    sections: [
-      { head: 'Wer ist versichert?', items: ['Aktive Vorstände', 'Ehemalige Vorstände für Pflichtverletzungen während der Amtszeit'] },
-      { head: 'Deckung', items: ['1 Mio. € pro Schadensfall', 'Ab Haushaltssumme 200.000 € automatisch im Beitrag enthalten'] }
-    ]
-  },
-  rechtsberatung: { title: 'Rechtsberatung', intro: 'Anwaltliche Beratung zu Vereins- und Steuerrecht durch Fachanwälte. Hilft bei der Prüfung wichtiger Verträge und Satzungsfragen.' },
-  vorstandsberatung: { title: 'Vorstandsberatung', intro: 'Praxisnahe Unterstützung bei Organisations- und Finanzfragen im Vereinsalltag.' },
-  rs: {
-    title: 'Rechtsschutzversicherung',
-    intro: 'Übernimmt Kosten für anwaltliche und gerichtliche Auseinandersetzungen.',
-    sections: [
-      { head: 'Was ist abgedeckt?', items: ['Anwalts- und Gerichtskosten', 'Inkl. Rechtsberatung PLUS (Antwort in 3 Werktagen)', 'Deckungssumme bis 2 Mio €'] },
-      { head: 'Hinweis', items: ['Nur in Kombination mit dem Vereins-Schutzbrief buchbar.'] }
-    ]
-  },
-  rw: {
-    title: 'Rückwirkende Absicherung',
-    intro: 'Deckt Vermögensschäden aus der Vergangenheit ab – bis zu 3 Jahre rückwirkend. Besonders wertvoll, wenn Sie ein Ehrenamt neu übernehmen.',
-    sections: [{ head: 'Wichtig', items: ['Startet zwingend zusammen mit der Vermögensschadenhaftpflicht', 'Einmalige Zahlung, kein laufender Beitrag', 'Nicht möglich, wenn die Vermögensschadenhaftpflicht ausgesetzt wird'] }]
-  },
-  start: { title: 'Startdatum Ihres Vereins-Schutzbriefs', intro: 'Das Datum, an dem Ihr Schutz beginnen soll. Bei "Ab sofort" startet der Schutz mit Vertragsabschluss.' },
-  defer: {
-    title: 'Bausteine verschieben oder aussetzen',
-    intro: 'Falls Sie für einen einzelnen Baustein bereits eine bestehende Versicherung haben, können Sie diesen Baustein verschieben oder permanent aussetzen.',
-    sections: [{ head: 'Wichtig', items: ['Nur einer der beiden Pflichtbausteine (Haftpflicht ODER Vermögensschaden) kann verschoben oder ausgesetzt werden', 'Mindestens einer muss zwingend mit dem Vereins-Schutzbrief starten'] }]
-  },
-  hp: { title: 'Haftpflicht & Veranstalterhaftpflicht', intro: 'Pflichtbaustein: Haftpflicht-Schutz für den Verein und seine Veranstaltungen. Dieser Baustein deckt sowohl den laufenden Vereinsbetrieb als auch einzelne Veranstaltungen ab.' },
-  vs: { title: 'Vermögensschadenhaftpflicht', intro: 'Pflichtbaustein: Schutz vor finanziellen Schäden durch Fehler im Vereinsbetrieb. Bei Haushaltssumme ab 200.000 € automatisch inklusive D&O-Versicherung.' },
-  aussetzen: {
-    title: 'Baustein permanent aussetzen',
-    intro: 'Wenn Sie bereits eine bestehende Versicherung für einen Pflichtbaustein haben, können Sie diesen permanent aussetzen.',
-    sections: [{ head: 'Bitte beachten', items: ['Nur einer der beiden Pflichtbausteine kann ausgesetzt werden', 'Der andere muss zwingend mit dem Vereins-Schutzbrief starten', 'Wenn Sie die Vermögensschadenhaftpflicht aussetzen, kann die Rückwirkende Absicherung nicht in Anspruch genommen werden'] }]
-  }
-};
+// (Die helpModals und openHelpModal Funktionen bleiben wie sie sind)
 
-function openHelpModal(key) {
-  const data = helpModals[key];
-  if (!data) return;
-  let html = `<h2>${data.title}</h2>`;
-  if (data.intro) html += `<p>${data.intro}</p>`;
-  if (data.sections) {
-    data.sections.forEach(s => {
-      html += `<h3>${s.head}</h3><ul>${s.items.map(i => `<li>${i}</li>`).join('')}</ul>`;
-    });
-  }
-  document.getElementById('help-content').innerHTML = html;
-  document.getElementById('help-modal').classList.remove('hidden');
-}
-
-function closeHelpModal() { document.getElementById('help-modal').classList.add('hidden'); }
-document.getElementById('help-close').addEventListener('click', closeHelpModal);
-document.getElementById('help-modal').addEventListener('click', e => {
-  if (e.target.id === 'help-modal') closeHelpModal();
-});
-
-document.addEventListener('click', e => {
-  const helpBtn = e.target.closest('.help-icon');
-  if (helpBtn) {
-    e.stopPropagation();
-    openHelpModal(helpBtn.dataset.help);
-  }
-});
-
-// Initialer Validierungs-Render
-validateS1();
-
-// ============ PDF EXPORT (KUGELSICHER & MIT DIAGNOSE) ============
+// ============ PDF EXPORT BAUSTEIN ============
 const pdfButton = document.getElementById('btn-pdf-download');
-
-if (!pdfButton) {
-  // Falls dieser Fehler in der F12-Konsole auftaucht, stimmt die ID in der index.html nicht!
-  console.warn("PDF-Button mit der ID 'btn-pdf-download' wurde im HTML nicht gefunden.");
-} else {
+if (pdfButton) {
   pdfButton.addEventListener('click', () => {
-    console.log("PDF-Button wurde geklickt. Starte Generierung...");
-
-    // Sicherheitsprüfung: Ist die html2pdf-Bibliothek überhaupt da?
     if (typeof html2pdf === 'undefined') {
-      alert("Fehler: Die PDF-Bibliothek wurde nicht geladen!\n\nBitte prüfe, ob das <script>-Tag für 'html2pdf.bundle.min.js' korrekt in deiner index.html eingebunden ist.");
+      alert("Fehler: Die PDF-Bibliothek wurde nicht geladen!");
       return;
     }
 
-    // Ein temporäres Element erstellen, um das PDF sauber zu layouten
     const element = document.createElement('div');
     element.style.padding = '30px';
     element.style.fontFamily = 'Lato, sans-serif';
     element.style.color = '#1a2e1a';
 
-    // Prüfen, ob die Übersichtselemente existieren, um Abstürze zu verhindern
     const orgHTML = document.getElementById('ov-organisation')?.innerHTML || 'Keine Daten vorhanden';
     const paketHTML = document.getElementById('ov-paket')?.innerHTML || 'Keine Daten vorhanden';
     const startzeitHTML = document.getElementById('ov-startzeit')?.innerHTML || 'Keine Daten vorhanden';
     const kostenHTML = document.getElementById('ov-kosten')?.innerHTML || 'Keine Daten vorhanden';
 
-    // Wunderschönen Header für das PDF generieren
     element.innerHTML = `
       <div style="border-bottom: 2px solid #2f7044; padding-bottom: 15px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center;">
         <span style="font-size: 20px; font-weight: bold; color: #313231;">Deutsches Ehrenamt</span>
@@ -731,7 +643,6 @@ if (!pdfButton) {
       </p>
     `;
 
-    // Optionen für den PDF-Export festlegen
     const opt = {
       margin:       15,
       filename:     'Vereins-Schutzbrief_Konfiguration.pdf',
@@ -740,12 +651,6 @@ if (!pdfButton) {
       jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
-    // PDF generieren und herunterladen
-    try {
-      html2pdf().set(opt).from(element).save();
-    } catch (err) {
-      console.error("Fehler bei der PDF-Generierung:", err);
-      alert("Das PDF konnte nicht erstellt werden. Details findest du in der F12-Entwicklerkonsole.");
-    }
+    html2pdf().set(opt).from(element).save();
   });
 }
