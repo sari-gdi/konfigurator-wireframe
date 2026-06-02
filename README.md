@@ -4,8 +4,7 @@ Ein interaktiver, mehrstufiger Online-Konfigurator zur Berechnung von maßgeschn
 
 ## 🚀 Live-Demo
 Du kannst dir den fertigen Konfigurator hier live ansehen:
-👉 [DEIN-GITHUB-BENUTZERNAME.github.io/DEIN-REPOSITORY-NAME](https://DEIN-GITHUB-BENUTZERNAME.github.io/DEIN-REPOSITORY-NAME)
-*(Hinweis: Ersetze den Link mit deiner GitHub-Pages-URL)*
+👉 https://sari-gdi.github.io/konfigurator-wireframe/
 
 ---
 
