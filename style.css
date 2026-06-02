@@ -143,7 +143,7 @@ select:focus, input[type="date"]:focus {
 /* Indent Datepicker */
 .indent { margin-left: 28px; margin-top: 4px; }
 .indent.hidden { display: none; }
-.hint { font-size: var(--font-size-xs); color: var(--text-muted); margin-top: 4px; display: flex; align-items: center; gap: 4px; } birthday
+.hint { font-size: var(--font-size-xs); color: var(--text-muted); margin-top: 4px; display: flex; align-items: center; gap: 4px; } 
 
 /* Buttons */
 button.primary {
