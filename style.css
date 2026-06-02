@@ -23,7 +23,7 @@ html { scroll-behavior: smooth; }
   --font-serif: "Vollkorn", Georgia, serif;
   --font-sans: "Lato", -apple-system, BlinkMacSystemFont, sans-serif;
 
-  /* DESIGN SYSTEM: FLUID & PROPORTIONAL TYPOGRAPHY */
+  /* DESIGN SYSTEM: FLUID & PROPORTIONAL TYPOGRAPHY (Base: 16px) */
   --font-size-hero: clamp(2.25rem, 1.5rem + 3.33vw, 3rem);
   --font-size-h1-intro: clamp(1.625rem, 1rem + 2.78vw, 2.25rem);
   --font-size-h1-step: clamp(1.5rem, 1.125rem + 1.67vw, 1.875rem);
@@ -143,7 +143,7 @@ select:focus, input[type="date"]:focus {
 /* Indent Datepicker */
 .indent { margin-left: 28px; margin-top: 4px; }
 .indent.hidden { display: none; }
-.hint { font-size: var(--font-size-xs); color: var(--text-muted); margin-top: 4px; display: flex; align-items: center; gap: 4px; } 
+.hint { font-size: var(--font-size-xs); color: var(--text-muted); margin-top: 4px; display: flex; align-items: center; gap: 4px; }
 
 /* Buttons */
 button.primary {
@@ -500,7 +500,10 @@ button.secondary:hover { background: var(--bg-muted); border-color: var(--brand-
 .modal-actions { display: flex; flex-direction: column; gap: 8px; }
 .modal-actions button { width: 100%; }
 
-/* MOBILE OPTIMIERUNGEN & RESPONSIVE BREAKPOINTS */
+/* ==========================================================================
+   NEUE MOBILE OPTIMIERUNGEN & RESPONSIVE BREAKPOINTS
+   ========================================================================== */
+
 @media (max-width: 768px) {
   .header { 
     grid-template-columns: 1fr auto; 
