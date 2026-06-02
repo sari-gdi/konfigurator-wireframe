@@ -22,6 +22,7 @@ const PRICE_BASE = {
   300000: { base: 855,  withDo: 855 },
   500000: { base: 1014, withDo: 1014 },
   1000000:{ base: 1356, withDo: 1356 },
+  1556000:{ base: 1556, withDo: 1556 }, // Fallback-Absicherung
   1500000:{ base: 1556, withDo: 1556 },
   2000000:{ base: 1870, withDo: 1870 }
 };
@@ -34,8 +35,7 @@ function isDoAuto() {
 function priceBase() {
   if (!state.org.budget) return 0;
   const e = PRICE_BASE[state.org.budget];
-  if (!e) return 0;
-  return e.base;
+  return e ? e.base : 0;
 }
 function priceDoSurcharge() {
   if (!state.org.budget || isDoAuto()) return 0;
@@ -72,8 +72,10 @@ const labels = {
 // ============ STEP 1 ============
 function validateS1() {
   const ok = state.org.legal && state.org.budget && state.org.members;
-  document.getElementById('btn-1').disabled = !ok;
+  const btn = document.getElementById('btn-1');
+  if (btn) btn.disabled = !ok;
 }
+
 ['legal','budget','members','orgtype'].forEach(id => {
   const el = document.getElementById(id);
   if (el) {
@@ -89,18 +91,29 @@ function validateS1() {
   }
 });
 
-document.getElementById('btn-1').addEventListener('click', () => {
-  state.unlockedSteps = Math.max(state.unlockedSteps, 2);
-  renderS2();
-  revealStep(2);
-});
+const btn1 = document.getElementById('btn-1');
+if (btn1) {
+  btn1.addEventListener('click', () => {
+    state.unlockedSteps = Math.max(state.unlockedSteps, 2);
+    renderS2();
+    revealStep(2);
+  });
+}
 
-document.getElementById('edit-s1').addEventListener('click', () => scrollTo('step-1'));
-document.getElementById('edit-s2').addEventListener('click', () => scrollTo('step-2'));
-document.getElementById('ov-edit-1').addEventListener('click', () => scrollTo('step-1'));
-document.getElementById('ov-edit-2').addEventListener('click', () => scrollTo('step-2'));
-document.getElementById('ov-edit-3').addEventListener('click', () => scrollTo('step-3'));
-function scrollTo(id) { document.getElementById(id).scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+const safeBindClick = (id, target) => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('click', () => scrollTo(target));
+};
+safeBindClick('edit-s1', 'step-1');
+safeBindClick('edit-s2', 'step-2');
+safeBindClick('ov-edit-1', 'step-1');
+safeBindClick('ov-edit-2', 'step-2');
+safeBindClick('ov-edit-3', 'step-3');
+
+function scrollTo(id) { 
+  const el = document.getElementById(id);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); 
+}
 
 // ============ STEP 2 ============
 document.querySelectorAll('.checkbox').forEach(c => {
@@ -108,11 +121,9 @@ document.querySelectorAll('.checkbox').forEach(c => {
     if (c.closest('.disabled')) return;
     const key = c.dataset.key;
     state.optional[key] = !state.optional[key];
-    
     if (key === 'rw' && state.optional.rw) {
       state.modules.vs.mode = 'default';
     }
-
     renderS2();
     if (state.unlockedSteps >= 3) renderS3();
     if (state.unlockedSteps >= 4) renderS4();
@@ -121,13 +132,20 @@ document.querySelectorAll('.checkbox').forEach(c => {
 
 function renderS2() {
   const auto = isDoAuto();
-  document.getElementById('card-do-auto').classList.toggle('hidden', !auto);
-  document.getElementById('opt-do').style.display = auto ? 'none' : '';
+  const cardDo = document.getElementById('card-do-auto');
+  const optDo = document.getElementById('opt-do');
+  
+  if (cardDo) cardDo.classList.toggle('hidden', !auto);
+  if (optDo) optDo.style.display = auto ? 'none' : '';
   if (auto) state.optional.do = false;
 
-  document.getElementById('do-price').innerHTML = priceDoSurcharge() > 0 ? `€ ${priceDoSurcharge()},– <span class="price-interval">/ Jahr</span>` : '€ – <span class="price-interval">/ Jahr</span>';
-  document.getElementById('rs-price').innerHTML = priceRs() > 0 ? `€ ${priceRs()},– <span class="price-interval">/ Jahr</span>` : '€ – <span class="price-interval">/ Jahr</span>';
-  document.getElementById('rw-price').innerHTML = priceRw() > 0 ? `€ ${priceRw()},– <span class="price-interval">/ einmalig</span>` : '€ – <span class="price-interval">/ einmalig</span>';
+  const dp = document.getElementById('do-price');
+  const rp = document.getElementById('rs-price');
+  const rwp = document.getElementById('rw-price');
+  
+  if (dp) dp.innerHTML = priceDoSurcharge() > 0 ? `€ ${priceDoSurcharge()},– <span class="price-interval">/ Jahr</span>` : '€ – <span class="price-interval">/ Jahr</span>';
+  if (rp) rp.innerHTML = priceRs() > 0 ? `€ ${priceRs()},– <span class="price-interval">/ Jahr</span>` : '€ – <span class="price-interval">/ Jahr</span>';
+  if (rwp) rwp.innerHTML = priceRw() > 0 ? `€ ${priceRw()},– <span class="price-interval">/ einmalig</span>` : '€ – <span class="price-interval">/ einmalig</span>';
 
   ['do','rs','rw'].forEach(k => {
     const cb = document.querySelector(`.checkbox[data-key="${k}"]`);
@@ -135,19 +153,22 @@ function renderS2() {
     const card = cb.closest('.optional-card');
     const lbl = document.querySelector(`[data-action-label="${k}"]`);
     cb.classList.toggle('checked', state.optional[k]);
-    card.classList.toggle('active', state.optional[k]);
+    if (card) card.classList.toggle('active', state.optional[k]);
     if (lbl) lbl.textContent = state.optional[k] ? 'Hinzugefügt' : 'Hinzufügen';
   });
 
   const heroBase = priceBase() + (state.optional.do && !auto ? priceDoSurcharge() : 0);
-  document.getElementById('hero-price').textContent = heroBase.toLocaleString('de-DE');
+  const hpEl = document.getElementById('hero-price');
+  if (hpEl) hpEl.textContent = heroBase.toLocaleString('de-DE');
 
   const tags = [];
   if (state.org.legal) tags.push(labels.legal[state.org.legal]);
   if (state.org.budget) tags.push(labels.budget[state.org.budget]);
   if (state.org.members) tags.push(labels.members[state.org.members]);
   if (state.org.orgtype) tags.push(labels.orgtype[state.org.orgtype]);
-  document.getElementById('recap-tags-s2').innerHTML = tags.map(t => `<span class="recap-tag">${t}</span>`).join('');
+  
+  const rt2 = document.getElementById('recap-tags-s2');
+  if (rt2) rt2.innerHTML = tags.map(t => `<span class="recap-tag">${t}</span>`).join('');
 
   const rows = [];
   const grund = priceBase();
@@ -163,40 +184,57 @@ function renderS2() {
   rows.push(['Jahresbeitrag gesamt', '', jahres + ' €']);
   if (state.optional.rw) rows.push(['Einmalig', '', priceRw() + ' €']);
 
-  document.getElementById('beitrag-rows').innerHTML = rows.map((r,i) => {
-    const isSum = r[0].startsWith('Jahresbeitrag') || r[0] === 'Einmalig';
-    return `<div class="beitrag-row${isSum?' summary':''}"><span>${r[0]}</span><span style="display:flex;gap:24px;"><span style="min-width:60px;text-align:right;color:var(--text-muted);">${r[1]}</span><span style="min-width:80px;text-align:right;">${r[2]}</span></span></div>`;
-  }).join('');
+  const br = document.getElementById('beitrag-rows');
+  if (br) {
+    br.innerHTML = rows.map(r => {
+      const isSum = r[0].startsWith('Jahresbeitrag') || r[0] === 'Einmalig';
+      return `<div class="beitrag-row${isSum?' summary':''}"><span>${r[0]}</span><span style="display:flex;gap:24px;"><span style="min-width:60px;text-align:right;color:var(--text-muted);">${r[1]}</span><span style="min-width:80px;text-align:right;">${r[2]}</span></span></div>`;
+    }).join('');
+  }
 }
 
-document.getElementById('btn-2-back').addEventListener('click', () => scrollTo('step-1'));
-document.getElementById('btn-2').addEventListener('click', () => {
-  state.unlockedSteps = Math.max(state.unlockedSteps, 3);
-  if (!state.startDate) state.startDate = new Date().toISOString().split('T')[0];
-  document.getElementById('start-date').value = state.startDate;
-  renderS3();
-  revealStep(3);
-});
+const btn2back = document.getElementById('btn-2-back');
+if (btn2back) btn2back.addEventListener('click', () => scrollTo('step-1'));
+
+const btn2 = document.getElementById('btn-2');
+if (btn2) {
+  btn2.addEventListener('click', () => {
+    state.unlockedSteps = Math.max(state.unlockedSteps, 3);
+    if (!state.startDate) state.startDate = new Date().toISOString().split('T')[0];
+    const sdInput = document.getElementById('start-date');
+    if (sdInput) sdInput.value = state.startDate;
+    renderS3();
+    revealStep(3);
+  });
+}
 
 // ============ STEP 3 ============
 document.querySelectorAll('input[name="start"]').forEach(r => {
   r.addEventListener('change', e => {
     state.startMode = e.target.value;
-    document.getElementById('start-date-wrap').classList.toggle('hidden', state.startMode !== 'datum');
+    const sdw = document.getElementById('start-date-wrap');
+    if (sdw) sdw.classList.toggle('hidden', state.startMode !== 'datum');
     renderS3();
   });
 });
-document.getElementById('start-date').addEventListener('change', e => {
-  state.startDate = e.target.value;
-  renderS3();
-});
+
+const sdEl = document.getElementById('start-date');
+if (sdEl) {
+  sdEl.addEventListener('change', e => {
+    state.startDate = e.target.value;
+    renderS3();
+  });
+}
+
 document.querySelectorAll('input[name="defer"]').forEach(r => {
   r.addEventListener('change', e => {
     state.deferOpen = (e.target.value === 'ja');
-    document.getElementById('modules').classList.toggle('hidden', !state.deferOpen);
+    const modBox = document.getElementById('modules');
+    if (modBox) modBox.classList.toggle('hidden', !state.deferOpen);
     renderS3();
   });
 });
+
 ['hp','vs','do','rs'].forEach(key => {
   document.querySelectorAll(`input[name="${key}"]`).forEach(r => {
     r.addEventListener('change', e => { state.modules[key].mode = e.target.value; renderS3(); });
@@ -210,23 +248,28 @@ function renderS3() {
   const start = effectiveStartDate();
   const hasDo = auto || state.optional.do;
 
-  document.getElementById('vs-title').innerHTML = hasDo
-    ? 'Vermögensschadenhaftpflicht- & D&O-Versicherung <span class="help-icon" data-help="vs">i</span>'
-    : 'Vermögensschadenhaftpflichtversicherung <span class="help-icon" data-help="vs">i</span>';
+  const vst = document.getElementById('vs-title');
+  if (vst) {
+    vst.innerHTML = hasDo
+      ? 'Vermögensschadenhaftpflicht- & D&O-Versicherung <span class="help-icon" data-help="vs">i</span>'
+      : 'Vermögensschadenhaftpflichtversicherung <span class="help-icon" data-help="vs">i</span>';
+  }
 
   ['hp','vs','do','rs'].forEach(k => {
     const el = document.getElementById(k + '-default-date');
     if (el) el.textContent = fmt(start);
   });
+  
   const vsDate = state.modules.vs.mode === 'verschieben' ? state.modules.vs.shiftDate : start;
-  document.getElementById('rw-date').textContent = fmt(vsDate);
+  const rwd = document.getElementById('rw-date');
+  if (rwd) rwd.textContent = fmt(vsDate);
 
   ['hp','vs','do','rs'].forEach(k => {
     const wrap = document.querySelector(`[data-shift="${k}"]`);
     if (!wrap) return;
     wrap.classList.toggle('hidden', state.modules[k].mode !== 'verschieben');
     const inp = wrap.querySelector('input[type="date"]');
-    if (start) { inp.min = start; inp.max = addMonths(start, 12); }
+    if (start && inp) { inp.min = start; inp.max = addMonths(start, 12); }
   });
 
   const hpDev = state.modules.hp.mode !== 'default';
@@ -234,30 +277,39 @@ function renderS3() {
   document.querySelectorAll('input[name="hp"]').forEach(r => {
     if (r.value !== 'default') {
       r.disabled = vsDev;
-      r.parentElement.classList.toggle('disabled', vsDev);
+      if (r.parentElement) r.parentElement.classList.toggle('disabled', vsDev);
     }
   });
   document.querySelectorAll('input[name="vs"]').forEach(r => {
     if (r.value !== 'default') {
       r.disabled = hpDev;
-      r.parentElement.classList.toggle('disabled', hpDev);
+      if (r.parentElement) r.parentElement.classList.toggle('disabled', hpDev);
     }
   });
 
   const vsAussetzen = state.modules.vs.mode === 'aussetzen';
-  document.getElementById('vs-warn').classList.toggle('hidden', !(vsAussetzen && state.optional.rw));
+  const vsw = document.getElementById('vs-warn');
+  if (vsw) vsw.classList.toggle('hidden', !(vsAussetzen && state.optional.rw));
 
   const tags = ['Vereins-Schutzbrief'];
   if (!auto && state.optional.do) tags.push('D&O');
   if (state.optional.rs) tags.push('Rechtsschutz');
   if (state.optional.rw) tags.push('Rückwirkende Absicherung');
-  document.getElementById('recap-tags-s3').innerHTML = tags.map(t => `<span class="recap-tag">${t}</span>`).join('');
+  
+  const rt3 = document.getElementById('recap-tags-s3');
+  if (rt3) rt3.innerHTML = tags.map(t => `<span class="recap-tag">${t}</span>`).join('');
 
-  document.getElementById('mod-rs').classList.toggle('hidden', !state.optional.rs);
-  document.getElementById('mod-do').classList.add('hidden');
-  document.getElementById('mod-rw').classList.toggle('hidden', !state.optional.rw);
-  document.getElementById('rw-info').style.display = vsAussetzen ? 'none' : '';
-  document.getElementById('rw-warn').classList.toggle('hidden', !vsAussetzen);
+  const mRs = document.getElementById('mod-rs');
+  const mDo = document.getElementById('mod-do');
+  const mRw = document.getElementById('mod-rw');
+  const rwi = document.getElementById('rw-info');
+  const rww = document.getElementById('rw-warn');
+  
+  if (mRs) mRs.classList.toggle('hidden', !state.optional.rs);
+  if (mDo) mDo.classList.add('hidden');
+  if (mRw) mRw.classList.toggle('hidden', !state.optional.rw);
+  if (rwi) rwi.style.display = vsAussetzen ? 'none' : '';
+  if (rww) rww.classList.toggle('hidden', !vsAussetzen);
 
   const zus = [];
   zus.push(['Vereins-Schutzbrief', fmt(start)]);
@@ -268,30 +320,37 @@ function renderS3() {
   if (vsAussetzen) zus.push([vsLbl, '<span class="val warn">ausgesetzt</span>']);
   else zus.push([vsLbl, fmt(state.modules.vs.mode === 'verschieben' ? state.modules.vs.shiftDate : start)]);
   
-  if (!auto && !state.optional.do) {
-    zus.push(['D&O-Versicherung', '<span class="val muted">nicht enthalten</span>']);
-  }
+  if (!auto && !state.optional.do) zus.push(['D&O-Versicherung', '<span class="val muted">nicht enthalten</span>']);
   if (state.optional.rs) zus.push(['Rechtsschutz', fmt(state.modules.rs.mode === 'verschieben' ? state.modules.rs.shiftDate : start)]);
   else zus.push(['Rechtsschutz', '<span class="val muted">nicht enthalten</span>']);
+  
   if (state.optional.rw) {
     if (vsAussetzen) zus.push(['Rückwirkende Absicherung', '<span class="val warn">ausgesetzt</span>']);
     else zus.push(['Rückwirkende Absicherung', fmt(vsDate)]);
   } else zus.push(['Rückwirkende Absicherung', '<span class="val muted">nicht enthalten</span>']);
 
-  document.getElementById('zus-rows').innerHTML = zus.map(r => {
-    if (r[1].includes('<span')) return `<div class="zus-row"><span class="lbl">${r[0]}</span>${r[1]}</div>`;
-    return `<div class="zus-row"><span class="lbl">${r[0]}</span><span class="val">${r[1]}</span></div>`;
-  }).join('');
+  const zr = document.getElementById('zus-rows');
+  if (zr) {
+    zr.innerHTML = zus.map(r => {
+      if (r[1].includes('<span')) return `<div class="zus-row"><span class="lbl">${r[0]}</span>${r[1]}</div>`;
+      return `<div class="zus-row"><span class="lbl">${r[0]}</span><span class="val">${r[1]}</span></div>`;
+    }).join('');
+  }
 }
 
-document.getElementById('btn-3-back').addEventListener('click', () => scrollTo('step-2'));
-document.getElementById('btn-3').addEventListener('click', () => {
-  if (state.modules.vs.mode === 'aussetzen' && state.optional.rw) {
-    openModal();
-    return;
-  }
-  proceedToStep4();
-});
+const btn3back = document.getElementById('btn-3-back');
+if (btn3back) btn3back.addEventListener('click', () => scrollTo('step-2'));
+
+const btn3 = document.getElementById('btn-3');
+if (btn3) {
+  btn3.addEventListener('click', () => {
+    if (state.modules.vs.mode === 'aussetzen' && state.optional.rw) {
+      openModal();
+      return;
+    }
+    proceedToStep4();
+  });
+}
 
 function proceedToStep4() {
   state.unlockedSteps = Math.max(state.unlockedSteps, 4);
@@ -299,20 +358,30 @@ function proceedToStep4() {
   revealStep(4);
 }
 
-// ============ MODAL (RÜCKWIRKENDE ENTFERNEN) ============
-function openModal() { document.getElementById('modal-rw-removal').classList.remove('hidden'); }
-function closeModal() { document.getElementById('modal-rw-removal').classList.add('hidden'); }
-document.getElementById('modal-cancel').addEventListener('click', closeModal);
-document.getElementById('modal-confirm').addEventListener('click', () => {
-  state.optional.rw = false;
-  renderS2();
-  renderS3();
-  closeModal();
-  proceedToStep4();
-});
-document.getElementById('modal-rw-removal').addEventListener('click', e => {
-  if (e.target.id === 'modal-rw-removal') closeModal();
-});
+// ============ MODALS CODE ============
+function openModal() { 
+  const el = document.getElementById('modal-rw-removal');
+  if (el) el.classList.remove('hidden'); 
+}
+function closeModal() { 
+  const el = document.getElementById('modal-rw-removal');
+  if (el) el.classList.add('hidden'); 
+}
+const mcBtn = document.getElementById('modal-cancel');
+if (mcBtn) mcBtn.addEventListener('click', closeModal);
+
+const mcfBtn = document.getElementById('modal-confirm');
+if (mcfBtn) {
+  mcfBtn.addEventListener('click', () => {
+    state.optional.rw = false;
+    renderS2();
+    renderS3();
+    closeModal();
+    proceedToStep4();
+  });
+}
+const mrwEl = document.getElementById('modal-rw-removal');
+if (mrwEl) mrwEl.addEventListener('click', e => { if (e.target.id === 'modal-rw-removal') closeModal(); });
 
 // ============ STEP 4 (ÜBERSICHT) ============
 function renderS4() {
@@ -327,7 +396,8 @@ function renderS4() {
     ['Aktive Mitglieder', state.org.members ? ('bis ' + state.org.members) : '–'],
     ['Organisationsform', labels.orgtype[state.org.orgtype] || '–']
   ];
-  document.getElementById('ov-organisation').innerHTML = org.map(r => `<div class="ov-row"><span class="lbl">${r[0]}</span><span class="val">${r[1]}</span></div>`).join('');
+  const ovo = document.getElementById('ov-organisation');
+  if (ovo) ovo.innerHTML = org.map(r => `<div class="ov-row"><span class="lbl">${r[0]}</span><span class="val">${r[1]}</span></div>`).join('');
 
   let html = '<div class="paket-group-label">Inklusivleistungen</div>';
   const inkl = [
@@ -347,10 +417,10 @@ function renderS4() {
   opt.push(['Rückwirkende Absicherung', state.optional.rw && !vsAussetzen ? 'enthalten (einmalig)' : '<span class="tag-not-included">nicht enthalten</span>']);
   html += opt.map(r => `<div class="ov-row"><span class="lbl">${r[0]}</span><span class="val">${r[1]}</span></div>`).join('');
 
-  document.getElementById('ov-paket').innerHTML = html;
+  const ovp = document.getElementById('ov-paket');
+  if (ovp) ovp.innerHTML = html;
 
   const vsLbl = hasDo ? 'Vermögensschaden & D&O' : 'Vermögensschadenhaftpflicht';
-
   const sz = [];
   sz.push(['Vereins-Schutzbrief', fmt(start)]);
   if (state.modules.hp.mode === 'aussetzen') sz.push(['Haftpflicht & Veranstalter', '<span class="val warn">ausgesetzt</span>']);
@@ -366,10 +436,13 @@ function renderS4() {
   if (state.optional.rw && !vsAussetzen) sz.push(['Rückwirkende Absicherung', fmt(state.modules.vs.mode === 'verschieben' ? state.modules.vs.shiftDate : start)]);
   else sz.push(['Rückwirkende Absicherung', '<span class="val muted">nicht enthalten</span>']);
 
-  document.getElementById('ov-startzeit').innerHTML = sz.map(r => {
-    if (r[1].includes('<span')) return `<div class="ov-row"><span class="lbl">${r[0]}</span>${r[1]}</div>`;
-    return `<div class="ov-row"><span class="lbl">${r[0]}</span><span class="val">${r[1]}</span></div>`;
-  }).join('');
+  const ovs = document.getElementById('ov-startzeit');
+  if (ovs) {
+    ovs.innerHTML = sz.map(r => {
+      if (r[1].includes('<span')) return `<div class="ov-row"><span class="lbl">${r[0]}</span>${r[1]}</div>`;
+      return `<div class="ov-row"><span class="lbl">${r[0]}</span><span class="val">${r[1]}</span></div>`;
+    }).join('');
+  }
 
   const grund = priceBase();
   const doFull = (!auto && state.optional.do) ? priceDoSurcharge() : 0;
@@ -448,7 +521,6 @@ function renderS4() {
 
     if (rsFull > 0) {
       k += `<div style="font-size: var(--font-size-xs); font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-top: 20px; margin-bottom: 6px; border-bottom: 1px dashed var(--border-soft); padding-bottom: 4px;">Optionale Ergänzungen</div>`;
-      
       let rsTxt1 = '';
       if (state.modules.rs.mode === 'verschieben') rsTxt1 = `${rsYr1} € <span style="font-size:11px; color:var(--text-muted); font-weight:400;">(anteilig)</span>`;
       else rsTxt1 = `${rsYr1} €`;
@@ -472,127 +544,17 @@ function renderS4() {
             </div>`;
     }
   }
-
-  document.getElementById('ov-kosten').innerHTML = k;
+  const ovk = document.getElementById('ov-kosten');
+  if (ovk) ovk.innerHTML = k;
 }
 
-document.getElementById('btn-4-back').addEventListener('click', () => scrollTo('step-3'));
+const btn4back = document.getElementById('btn-4-back');
+if (btn4back) btn4back.addEventListener('click', () => scrollTo('step-3'));
 
-// ============ MODAL (SPEICHERN PER MAIL) LOGIK SPRE Sprenger-Sicher ============
-const saveButton = document.getElementById('btn-4-save');
-if (saveButton) {
-  saveButton.addEventListener('click', () => {
-    document.getElementById('save-email').value = '';
-    document.getElementById('save-modal').classList.remove('hidden');
-  });
-}
+const btn4 = document.getElementById('btn-4');
+if (btn4) btn4.addEventListener('click', () => alert('Demo: hier ginge es weiter zu den Antragsdaten.'));
 
-function closeSaveModal() { document.getElementById('save-modal').classList.add('hidden'); }
-const saveCloseBtn = document.getElementById('save-close');
-if (saveCloseBtn) saveCloseBtn.addEventListener('click', closeSaveModal);
-const saveCancelBtn = document.getElementById('save-cancel');
-if (saveCancelBtn) saveCancelBtn.addEventListener('click', closeSaveModal);
-
-const saveModalEl = document.getElementById('save-modal');
-if (saveModalEl) {
-  saveModalEl.addEventListener('click', e => { if (e.target.id === 'save-modal') closeSaveModal(); });
-}
-
-const saveSendBtn = document.getElementById('save-send');
-if (saveSendBtn) {
-  saveSendBtn.addEventListener('click', () => {
-    const email = document.getElementById('save-email').value.trim();
-    if (!email || !email.includes('@')) {
-      alert('Bitte eine gültige E-Mail-Adresse eingeben.');
-      return;
-    }
-
-    const autoDo = isDoAuto();
-    const vsAussetzen = state.modules.vs.mode === 'aussetzen';
-    const hpAussetzen = state.modules.hp.mode === 'aussetzen';
-    const start = effectiveStartDate();
-
-    const grund = priceBase();
-    const doFull = (!autoDo && state.optional.do) ? priceDoSurcharge() : 0;
-    const rsFull = state.optional.rs ? priceRs() : 0;
-    const rwP = (state.optional.rw && !vsAussetzen) ? priceRw() : 0;
-    const gesamtJahresBeitrag = grund + doFull + rsFull;
-
-    let emailText = `Hallo!\n\nVielen Dank für die Nutzung unseres Konfigurators. Hier ist Ihre maßgeschneiderte Übersicht:\n\n`;
-    
-    emailText += `📋 1. DETAILS ZUR ORGANISATION\n`;
-    emailText += `--------------------------------------------------\n`;
-    emailText += `   Rechtsform:        ${labels.legal[state.org.legal] || '–'}\n`;
-    emailText += `   Haushaltssumme:    ${labels.budget[state.org.budget] || '–'}\n`;
-    emailText += `   Aktive Mitglieder: ${state.org.members ? 'bis ' + state.org.members : '–'}\n`;
-    emailText += `   Sparte/Bereich:    ${labels.orgtype[state.org.orgtype] || 'Keine Angabe'}\n\n`;
-
-    emailText += `🛡️ 2. IHR GEWÄHLTES SCHUTZPAKET\n`;
-    emailText += `--------------------------------------------------\n`;
-    emailText += `  [✓] Vereinshaftpflicht\n`;
-    emailText += `  [✓] Veranstalterhaftpflicht\n`;
-    emailText += `  [${vsAussetzen ? ' ' : '✓'}] Vermögensschadenhaftpflicht ${vsAussetzen ? '(AUSGESETZT)' : ''}\n`;
-    emailText += `  [${(autoDo || state.optional.do) ? '✓' : ' '}] Vorstandshaftpflicht (D&O) ${autoDo ? '(Automatisch inklusive)' : ''}\n`;
-    emailText += `  [${state.optional.rs ? '✓' : ' '}] Rechtsschutzversicherung\n`;
-    emailText += `  [${(state.optional.rw && !vsAussetzen) ? '✓' : ' '}] Rückwirkende Absicherung\n\n`;
-
-    emailText += `📅 3. STARTZEITPUNKTE DER BAUSTEINE\n`;
-    emailText += `--------------------------------------------------\n`;
-    emailText += `  🏁 Haupt-Startdatum:         ${fmt(start)}\n`;
-    emailText += `  • Haftpflicht-Baustein:     ${hpAussetzen ? '❌ Ausgesetzt' : (state.modules.hp.mode === 'verschieben' ? fmt(state.modules.hp.shiftDate) + ' (verschoben)' : fmt(start))}\n`;
-    emailText += `  • Vermögensschaden & D&O:   ${vsAussetzen ? '❌ Ausgesetzt' : (state.modules.vs.mode === 'verschieben' ? fmt(state.modules.vs.shiftDate) + ' (verschoben)' : fmt(start))}\n`;
-    if (state.optional.rs) {
-      emailText += `  • Rechtsschutz:             ${state.modules.rs.mode === 'verschieben' ? fmt(state.modules.rs.shiftDate) + ' (verschoben)' : fmt(start)}\n`;
-    }
-    emailText += `\n`;
-
-    emailText += `💳 4. PREISÜBERSICHT (Regulär ab 2. Jahr)\n`;
-    emailText += `--------------------------------------------------\n`;
-    emailText += `  Basis-Schutzbrief:          ${grund} € / Jahr\n`;
-    if (doFull > 0) emailText += `  Zusatz D&O-Schutz:          ${doFull} € / Jahr\n`;
-    if (rsFull > 0) emailText += `  Zusatz Rechtsschutz:        ${rsFull} € / Jahr\n`;
-    emailText += `  ==================================================\n`;
-    emailText += `  🔥 LAUFENDER BEITRAG:       ${gesamtJahresBeitrag} € / Jahr\n`;
-    if (rwP > 0) {
-      emailText += `  ==================================================\n`;
-      emailText += `  🎁 Einmalige Kosten (RW):    ${rwP} € (einmalig)\n`;
-    }
-    emailText += `\n\nSie können Ihren Antrag jederzeit mit diesen Daten bei Ihrem Berater fortsetzen.\n\nMit freundlichen Grüßen\nIhr Vereins-Schutzbrief Team`;
-
-    const subject = encodeURIComponent("Ihre Konfiguration: Vereins-Schutzbrief");
-    const body = encodeURIComponent(emailText);
-
-    window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
-
-    closeSaveModal();
-    document.getElementById('save-email-shown').textContent = email;
-    document.getElementById('save-success-modal').classList.remove('hidden');
-  });
-}
-
-function closeSaveSuccess() { document.getElementById('save-success-modal').classList.add('hidden'); }
-const successCloseBtn = document.getElementById('save-success-close');
-if (successCloseBtn) successCloseBtn.addEventListener('click', closeSaveSuccess);
-const successOkBtn = document.getElementById('save-success-ok');
-if (successOkBtn) successOkBtn.addEventListener('click', closeSaveSuccess);
-const successModalEl = document.getElementById('save-success-modal');
-if (successModalEl) {
-  successModalEl.addEventListener('click', e => { if (e.target.id === 'save-success-modal') closeSaveSuccess(); });
-}
-
-document.getElementById('btn-4').addEventListener('click', () => alert('Demo: hier ginge es weiter zu den Antragsdaten.'));
-
-// ============ STEP REVEAL ============
-function revealStep(n) {
-  const el = document.getElementById('step-' + n);
-  el.classList.remove('hidden-step');
-  requestAnimationFrame(() => {
-    el.classList.add('visible');
-    setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
-  });
-}
-
-// ============ HELP MODALS TEXT DATA ============
+// ============ HELP MODAL SYSTEM ============
 const helpModals = {
   legal: { title: 'Rechtsform Ihres Vereins', intro: 'Die rechtliche Organisationsform Ihrer Einrichtung bestimmt teils den Versicherungsumfang. Wählen Sie die Form, unter der Ihr Verein eingetragen ist.' },
   budget: {
@@ -670,22 +632,25 @@ function openHelpModal(key) {
       html += `<h3>${s.head}</h3><ul>${s.items.map(i => `<li>${i}</li>`).join('')}</ul>`;
     });
   }
-  document.getElementById('help-content').innerHTML = html;
-  document.getElementById('help-modal').classList.remove('hidden');
+  const hc = document.getElementById('help-content');
+  const hm = document.getElementById('help-modal');
+  if (hc && hm) {
+    hc.innerHTML = html;
+    hm.classList.remove('hidden');
+  }
 }
 
-function closeHelpModal() { document.getElementById('help-modal').classList.add('hidden'); }
-const helpCloseBtn = document.getElementById('help-close');
-if (helpCloseBtn) helpCloseBtn.addEventListener('click', closeHelpModal);
-
-const helpModalEl = document.getElementById('help-modal');
-if (helpModalEl) {
-  helpModalEl.addEventListener('click', e => {
-    if (e.target.id === 'help-modal') closeHelpModal();
-  });
+function closeHelpModal() { 
+  const el = document.getElementById('help-modal');
+  if (el) el.classList.add('hidden'); 
 }
+const hcb = document.getElementById('help-close');
+if (hcb) hcb.addEventListener('click', closeHelpModal);
 
-// KLICK-DELEGATION FÜR HILFE ICON (Kugelsicher reaktiviert)
+const hmEl = document.getElementById('help-modal');
+if (hmEl) hmEl.addEventListener('click', e => { if (e.target.id === 'help-modal') closeHelpModal(); });
+
+// Globaler Klick-Delegator für Hilfe-Icons
 document.addEventListener('click', e => {
   const helpBtn = e.target.closest('.help-icon');
   if (helpBtn) {
@@ -694,19 +659,14 @@ document.addEventListener('click', e => {
   }
 });
 
-// Initialer Validierungs-Render
-validateS1();
-
-// ============ PDF EXPORT BAUSTEIN (KUGELSICHER AUS STATE BERECHNET) ============
+// ============ REAKTIVIERTER PDF EXPORT (KUGELSICHER & DOM-ATTACHED) ============
 const pdfButton = document.getElementById('btn-pdf-download');
 if (pdfButton) {
   pdfButton.addEventListener('click', () => {
     if (typeof html2pdf === 'undefined') {
-      alert("Fehler: Die PDF-Bibliothek wurde nicht geladen!");
+      alert("Fehler: Die PDF-Bibliothek wurde nicht aus dem Internet geladen!");
       return;
     }
-
-    console.log("Generiere PDF direkt aus den Anwendungsdaten...");
 
     const autoDo = isDoAuto();
     const vsAussetzen = state.modules.vs.mode === 'aussetzen';
@@ -719,7 +679,14 @@ if (pdfButton) {
     const rwP = (state.optional.rw && !vsAussetzen) ? priceRw() : 0;
     const gesamtJahresBeitrag = grund + doFull + rsFull;
 
+    // Erstelle das Element im Speicher
     const element = document.createElement('div');
+    
+    // TRICK: Damit html2pdf es rendern kann, MUSS es im DOM hängen, aber wir verschieben es aus dem Sichtfeld!
+    element.style.position = 'absolute';
+    element.style.left = '-9999px';
+    element.style.top = '0';
+    element.style.width = '720px'; 
     element.style.padding = '35px';
     element.style.fontFamily = 'Arial, sans-serif';
     element.style.color = '#1a2e1a';
@@ -834,6 +801,9 @@ if (pdfButton) {
       </div>
     `;
 
+    // Element in den DOM einfügen, damit html2pdf es "fotografieren" kann
+    document.body.appendChild(element);
+
     const opt = {
       margin:       15,
       filename:     'Vereins-Schutzbrief_Konfiguration.pdf',
@@ -842,6 +812,15 @@ if (pdfButton) {
       jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
-    html2pdf().set(opt).from(element).save();
+    // PDF erzeugen und das temporäre Element direkt danach wieder rückstandslos löschen
+    html2pdf().set(opt).from(element).save().then(() => {
+      document.body.removeChild(element);
+    }).catch(err => {
+      console.error(err);
+      document.body.removeChild(element);
+    });
   });
 }
+
+// Initialer Validierungs-Render
+validateS1();
