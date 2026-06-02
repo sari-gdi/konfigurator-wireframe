@@ -489,68 +489,66 @@ document.getElementById('save-send').addEventListener('click', () => {
     return;
   }
 
-  // 1. Hilfsvariablen für die Logik (genau wie in deinem System)
+  // 1. Hilfsvariablen & Berechnungen
   const autoDo = isDoAuto();
   const vsAussetzen = state.modules.vs.mode === 'aussetzen';
   const hpAussetzen = state.modules.hp.mode === 'aussetzen';
   const start = effectiveStartDate();
 
-  // Preise berechnen
   const grund = priceBase();
   const doFull = (!autoDo && state.optional.do) ? priceDoSurcharge() : 0;
   const rsFull = state.optional.rs ? priceRs() : 0;
   const rwP = (state.optional.rw && !vsAussetzen) ? priceRw() : 0;
   const gesamtJahresBeitrag = grund + doFull + rsFull;
 
-  // 2. Den E-Mail-Text Zeile für Zeile detailgetreu zusammenbauen
-  let emailText = `Hallo!\n\nHier ist die Übersicht Ihrer gespeicherten Konfiguration für den Vereins-Schutzbrief:\n\n`;
+  // 2. "Schönes" Plain-Text-Design mit Emojis und Struktur
+  let emailText = `Hallo!\n\nVielen Dank für die Nutzung unseres Konfigurators. Hier ist Ihre maßgeschneiderte Übersicht:\n\n`;
   
-  emailText += `🏢 DETAILS ZUR ORGANISATION\n`;
-  emailText += `========================================\n`;
-  emailText += `- Rechtsform: ${labels.legal[state.org.legal] || '–'}\n`;
-  emailText += `- Haushaltssumme: ${labels.budget[state.org.budget] || '–'}\n`;
-  emailText += `- Aktive Mitglieder: ${state.org.members ? 'bis ' + state.org.members : '–'}\n`;
-  emailText += `- Organisationsform/Sparte: ${labels.orgtype[state.org.orgtype] || 'Keine Angabe'}\n\n`;
+  emailText += `📋 1. DETAILS ZUR ORGANISATION\n`;
+  emailText += `--------------------------------------------------\n`;
+  emailText += `   Rechtsform:        ${labels.legal[state.org.legal] || '–'}\n`;
+  emailText += `   Haushaltssumme:    ${labels.budget[state.org.budget] || '–'}\n`;
+  emailText += `   Aktive Mitglieder: ${state.org.members ? 'bis ' + state.org.members : '–'}\n`;
+  emailText += `   Sparte/Bereich:    ${labels.orgtype[state.org.orgtype] || 'Keine Angabe'}\n\n`;
 
-  emailText += `📦 IHR GEWÄHLTES SCHUTZPAKET\n`;
-  emailText += `========================================\n`;
-  emailText += `- Vereinshaftpflicht: Enthalten\n`;
-  emailText += `- Veranstalterhaftpflicht: Enthalten\n`;
-  emailText += `- Vermögensschadenhaftpflicht: ${vsAussetzen ? '❌ AUSGESETZT' : '✓ Enthalten'}\n`;
-  emailText += `- Vorstandshaftpflicht (D&O): ${autoDo ? '✓ Inklusive (automatisch ab 200k €)' : (state.optional.do ? '✓ Enthalten (optional gebucht)' : '❌ Nicht enthalten')}\n`;
-  emailText += `- Rechtsschutzversicherung: ${state.optional.rs ? '✓ Enthalten (optional gebucht)' : '❌ Nicht enthalten'}\n`;
-  emailText += `- Rückwirkende Absicherung: ${state.optional.rw && !vsAussetzen ? '✓ Enthalten (einmalig gebucht)' : '❌ Nicht enthalten'}\n\n`;
+  emailText += `🛡️ 2. IHR GEWÄHLTES SCHUTZPAKET\n`;
+  emailText += `--------------------------------------------------\n`;
+  emailText += `  [✓] Vereinshaftpflicht\n`;
+  emailText += `  [✓] Veranstalterhaftpflicht\n`;
+  emailText += `  [${vsAussetzen ? ' ' : '✓'}] Vermögensschadenhaftpflicht ${vsAussetzen ? '(AUSGESETZT)' : ''}\n`;
+  emailText += `  [${(autoDo || state.optional.do) ? '✓' : ' '}] Vorstandshaftpflicht (D&O) ${autoDo ? '(Automatisch inklusive)' : ''}\n`;
+  emailText += `  [${state.optional.rs ? '✓' : ' '}] Rechtsschutzversicherung\n`;
+  emailText += `  [${(state.optional.rw && !vsAussetzen) ? '✓' : ' '}] Rückwirkende Absicherung\n\n`;
 
-  emailText += `📅 STARTZEITPUNKTE DER BAUSTEINE\n`;
-  emailText += `========================================\n`;
-  emailText += `- Haupt-Startdatum des Schutzbriefs: ${fmt(start)}\n`;
-  emailText += `- Haftpflicht & Veranstalter: ${hpAussetzen ? 'Ausgesetzt' : (state.modules.hp.mode === 'verschieben' ? fmt(state.modules.hp.shiftDate) + ' (verschoben)' : fmt(start))}\n`;
-  emailText += `- Vermögensschaden & D&O: ${vsAussetzen ? 'Ausgesetzt' : (state.modules.vs.mode === 'verschieben' ? fmt(state.modules.vs.shiftDate) + ' (verschoben)' : fmt(start))}\n`;
+  emailText += `📅 3. STARTZEITPUNKTE DER BAUSTEINE\n`;
+  emailText += `--------------------------------------------------\n`;
+  emailText += `  🏁 Haupt-Startdatum:         ${fmt(start)}\n`;
+  emailText += `  • Haftpflicht-Baustein:     ${hpAussetzen ? '❌ Ausgesetzt' : (state.modules.hp.mode === 'verschieben' ? fmt(state.modules.hp.shiftDate) + ' (verschoben)' : fmt(start))}\n`;
+  emailText += `  • Vermögensschaden & D&O:   ${vsAussetzen ? '❌ Ausgesetzt' : (state.modules.vs.mode === 'verschieben' ? fmt(state.modules.vs.shiftDate) + ' (verschoben)' : fmt(start))}\n`;
   if (state.optional.rs) {
-    emailText += `- Rechtsschutz: ${state.modules.rs.mode === 'verschieben' ? fmt(state.modules.rs.shiftDate) + ' (verschoben)' : fmt(start)}\n`;
+    emailText += `  • Rechtsschutz:             ${state.modules.rs.mode === 'verschieben' ? fmt(state.modules.rs.shiftDate) + ' (verschoben)' : fmt(start)}\n`;
   }
+  emailText += `\n`;
 
-  emailText += `\n💰 PREISBERECHNUNG (Regulär ab 2. Jahr)\n`;
-  emailText += `========================================\n`;
-  emailText += `- Basis Vereins-Schutzbrief: ${grund} € / Jahr\n`;
-  if (doFull > 0) emailText += `- Optionale D&O-Versicherung: ${doFull} € / Jahr\n`;
-  if (rsFull > 0) emailText += `- Optionaler Rechtsschutz: ${rsFull} € / Jahr\n`;
-  emailText += `----------------------------------------\n`;
-  emailText += `👉 Laufender Beitrag gesamt: ${gesamtJahresBeitrag} € / Jahr\n`;
+  emailText += `💳 4. PREISÜBERSICHT (Regulär ab 2. Jahr)\n`;
+  emailText += `--------------------------------------------------\n`;
+  emailText += `  Basis-Schutzbrief:          ${grund} € / Jahr\n`;
+  if (doFull > 0) emailText += `  Zusatz D&O-Schutz:          ${doFull} € / Jahr\n`;
+  if (rsFull > 0) emailText += `  Zusatz Rechtsschutz:        ${rsFull} € / Jahr\n`;
+  emailText += `  ==================================================\n`;
+  emailText += `  🔥 LAUFENDER BEITRAG:       ${gesamtJahresBeitrag} € / Jahr\n`;
   if (rwP > 0) {
-    emailText += `👉 Einmalige Kosten (Rückwirkend): ${rwP} € (einmalige Zahlung)\n`;
+    emailText += `  ==================================================\n`;
+    emailText += `  🎁 Einmalige Kosten (RW):    ${rwP} € (einmalig)\n`;
   }
+  emailText += `\n\nSie können Ihren Antrag jederzeit mit diesen Daten bei Ihrem Berater fortsetzen.\n\nMit freundlichen Grüßen\nIhr Vereins-Schutzbrief Team`;
 
-  emailText += `\n\nSie können den Antrag jederzeit fortsetzen, indem Sie sich an Ihren Berater wenden.\n\nMit freundlichen Grüßen\nIhr Vereins-Schutzbrief Team`;
-
-  // 3. Den Text für den E-Mail-Versand (Mailto-Link) codieren
+  // 3. Absenden via Mailto
   const subject = encodeURIComponent("Ihre Konfiguration: Vereins-Schutzbrief");
   const body = encodeURIComponent(emailText);
 
-  // E-Mail-Programm des Nutzers öffnen
   window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
 
-  // Modals wie gewohnt umschalten (Erfolgsmeldung anzeigen)
   closeSaveModal();
   document.getElementById('save-email-shown').textContent = email;
   document.getElementById('save-success-modal').classList.remove('hidden');
